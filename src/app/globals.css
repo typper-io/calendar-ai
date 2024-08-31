@@ -2,32 +2,205 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+    --background: 0, 0%, 100%;
+    --foreground: 223, 84%, 5%;
+
+    --card: 0, 0%, 100%;
+    --card-foreground: 223, 84%, 5%;
+
+    --popover: 0, 0%, 100%;
+    --popover-foreground: 223, 84%, 5%;
+
+    --primary: 223, 100%, 50%;
+    --primary-foreground: 87, 100%, 98%;
+
+    --secondary: 210, 40%, 96%;
+    --secondary-foreground: 222, 47%, 11%;
+
+    --muted: 210, 40%, 96%;
+    --muted-foreground: 215, 16%, 47%;
+
+    --accent: 210, 40%, 96%;
+    --accent-foreground: 222, 47%, 11%;
+
+    --destructive: 0, 84%, 60%;
+    --destructive-foreground: 210, 40%, 98%;
+
+    --border: 214, 32%, 91%;
+    --input: 214, 32%, 91%;
+    --ring: 223, 100%, 50%;
+
+    --radius: 8px;
+  }
+
+  .dark {
+    --background: 220, 86%, 3%;
+    --foreground: 87, 100%, 98%;
+
+    --card: 213, 32%, 11%;
+    --card-foreground: 87, 100%, 98%;
+
+    --popover: 213, 32%, 11%;
+    --popover-foreground: 87, 100%, 98%;
+
+    --primary: 223, 100%, 50%;
+    --primary-foreground: 87, 100%, 98%;
+
+    --secondary: 213, 32%, 11%;
+    --secondary-foreground: 87, 100%, 98%;
+
+    --muted: 213, 32%, 11%;
+    --muted-foreground: 215, 20%, 65%;
+
+    --accent: 213, 32%, 11%;
+    --accent-foreground: 87, 100%, 98%;
+
+    --destructive: 0, 63%, 31%;
+    --destructive-foreground: 87, 100%, 98%;
+
+    --border: 220, 18%, 13%;
+    --input: 222, 49%, 15%;
+    --ring: 223, 100%, 50%;
   }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+* {
+  scroll-behavior: smooth;
+  scrollbar-width: 7px;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  @apply bg-border rounded-full;
+}
+
+.fc .fc-timegrid-now-indicator-line {
+  border-color: hsl(var(--destructive)) !important;
+  border-width: 1px;
+}
+
+.fc .fc-day-today {
+  background-color: inherit !important;
+}
+
+.fc-timegrid-slots td {
+  border-color: hsl(var(--border)) !important;
+}
+
+.fc-timegrid-axis-cushion {
+  display: none;
+}
+
+.fc .fc-scrollgrid {
+  border: none !important;
+}
+
+.fc .fc-col-header-cell {
+  border: none !important;
+}
+
+.fc-daygrid-day {
+  border: none !important;
+}
+
+.fc-timegrid-axis {
+  border: none !important;
+}
+
+.presentation {
+  border: none !important;
+}
+
+.fc-col-header-cell-cushion {
+  font-weight: normal !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.fc-timegrid-slot-label-cushion {
+  font-weight: normal !important;
+  color: hsl(var(--muted-foreground)) !important;
+  font-size: 0.75rem !important;
+}
+
+.fc-event {
+  cursor: pointer;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.fc-event-main-frame {
+  display: flex !important;
+  flex-direction: column-reverse !important;
+  justify-content: start !important;
+  flex-wrap: wrap-reverse;
+}
+
+.fc-event-title-container {
+  flex-grow: 0 !important;
+}
+
+.fc-theme-standard td {
+  border: 1px solid hsl(var(--border));
+}
+
+.fc-theme-standard th {
+  border: none;
+}
+
+.fc .fc-daygrid-body-unbalanced .fc-daygrid-day-events {
+  min-height: auto !important;
+}
+
+.fc .fc-timegrid-divider {
+  background-color: transparent !important;
+  border: none;
+}
+
+.fc .fc-timegrid-slot-minor {
+  border: none !important;
+}
+
+.fc-day-today a span:nth-child(1) {
+  color: hsl(var(--foreground)) !important;
+}
+
+.fc-day-today a span:nth-child(2) {
+  color: hsl(var(--destructive-foreground)) !important;
+  background-color: hsl(var(--destructive)) !important;
+  padding-right: 4px;
+  padding-left: 4px;
+  padding-bottom: 2px;
+  padding-top: 2px;
+  border-radius: 6px;
+}
+
+.fc .fc-scrollgrid-section,
+.fc .fc-scrollgrid-section table,
+.fc .fc-scrollgrid-section > td {
+  border-right: none !important;
+}
+
+.fc-timegrid-now-indicator-arrow {
+  display: none;
 }
