@@ -59,7 +59,7 @@ export function Chat({
 
     document.addEventListener('keydown', down)
     return () => document.removeEventListener('keydown', down)
-  }, [])
+  }, [closeChat])
 
   return (
     <motion.div

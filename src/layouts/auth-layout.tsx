@@ -19,7 +19,7 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
               )}
             >
               Calendar AI is a smart calendar that uses AI to help you manage
-              your calendar. It's like magic, and it's free forever.
+              your calendar. It&apos;s like magic, and it&apos;s free forever.
             </p>
           </div>
           <HorizontalGradient className="top-20" />

@@ -45,7 +45,7 @@ export const Hero = () => {
       >
         <Balancer>
           Calendar AI is a smart calendar that uses AI to help you manage your
-          calendar. It's like magic, and it's free forever.
+          calendar. It&apos;s like magic, and it&apos;s free forever.
         </Balancer>
       </motion.p>
       <motion.div
