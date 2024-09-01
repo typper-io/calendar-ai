@@ -193,6 +193,9 @@
   padding-bottom: 2px;
   padding-top: 2px;
   border-radius: 6px;
+  width: 25px;
+  text-align: center;
+  display: inline-block;
 }
 
 .fc .fc-scrollgrid-section,
