@@ -50,16 +50,17 @@ export function Calendar() {
           throw new Error('Failed to fetch events')
         }
 
-        const data = (await response.json()) || { events: [] }
+        const data = await response.json()
 
         setEvents((prevEvents) => {
-          const newEvents = data.events.filter(
+          const newEvents = data.events?.filter?.(
             (newEvent: EventInput) =>
               !prevEvents.some(
                 (existingEvent) => existingEvent.id === newEvent.id,
               ),
           )
-          return [...prevEvents, ...newEvents]
+
+          return [...prevEvents, ...(newEvents || [])]
         })
 
         setCachedRanges((prevRanges) => [...prevRanges, { start, end }])
