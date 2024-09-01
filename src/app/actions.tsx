@@ -272,6 +272,24 @@ export async function submitMessage(
 
                           continue
                         }
+
+                        if (name === 'delete_event') {
+                          const { event_id } = JSON.parse(args)
+
+                          const result = await calendar.events.delete({
+                            calendarId: 'primary',
+                            eventId: event_id,
+                          })
+
+                          gui.append(<></>)
+
+                          tool_outputs.push({
+                            tool_call_id: toolCallId,
+                            output: JSON.stringify(result.data),
+                          })
+
+                          continue
+                        }
                       } catch (error: any) {
                         tool_outputs.push({
                           tool_call_id: toolCallId,

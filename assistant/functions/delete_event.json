@@ -1,0 +1,16 @@
+{
+  "name": "delete_event",
+  "description": "Delete a event.",
+  "strict": true,
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "event_id": {
+        "type": "string",
+        "description": "ID of the event to delete."
+      }
+    },
+    "additionalProperties": false,
+    "required": ["event_id"]
+  }
+}
