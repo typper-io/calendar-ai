@@ -1,0 +1,24 @@
+{
+  "name": "get_calendar",
+  "description": "Get the calendar state.",
+  "strict": true,
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "start_time": {
+        "type": "string",
+        "description": "Start time to fetch in format ISO8601."
+      },
+      "end_time": {
+        "type": "string",
+        "description": "End time to fetch in format ISO8601."
+      },
+      "calendar_id": {
+        "type": "string",
+        "description": "Email address of the calendar to fetch. Pass 'primary' for the primary calendar."
+      }
+    },
+    "additionalProperties": false,
+    "required": ["start_time", "end_time", "calendar_id"]
+  }
+}

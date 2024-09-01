@@ -1,0 +1,57 @@
+{
+  "name": "edit_event",
+  "description": "Edit a event.",
+  "strict": false,
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "start_time": {
+        "type": "string",
+        "description": "Start time to schedule in format ISO8601."
+      },
+      "end_time": {
+        "type": "string",
+        "description": "End time to schedule in format ISO8601."
+      },
+      "summary": {
+        "type": "string",
+        "description": "Summary of the event."
+      },
+      "description": {
+        "type": "string",
+        "description": "Description of the event."
+      },
+      "all_day": {
+        "type": "boolean",
+        "description": "If the event is all day."
+      },
+      "attendees": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "List of attendees."
+      },
+      "recurrence": {
+        "type": "object",
+        "properties": {
+          "frequency": {
+            "type": "string",
+            "description": "Frequency of the recurrence."
+          },
+          "interval": {
+            "type": "integer",
+            "description": "Interval of the recurrence."
+          },
+          "end": {
+            "type": "string",
+            "description": "End of the recurrence."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "additionalProperties": false,
+    "required": ["start_time", "end_time", "summary"]
+  }
+}
