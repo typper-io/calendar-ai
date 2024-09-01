@@ -49,7 +49,8 @@ export function Calendar() {
         if (!response.ok) {
           throw new Error('Failed to fetch events')
         }
-        const data = await response.json()
+
+        const data = (await response.json()) || { events: [] }
 
         setEvents((prevEvents) => {
           const newEvents = data.events.filter(
