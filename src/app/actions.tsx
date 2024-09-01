@@ -256,7 +256,7 @@ export async function submitMessage(
                                 dateTime: all_day ? undefined : end,
                                 date: all_day ? end.split('T')[0] : undefined,
                               },
-                              attendees: attendees.map((email: string) => ({
+                              attendees: attendees?.map((email: string) => ({
                                 email,
                               })),
                               recurrence,
