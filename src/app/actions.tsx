@@ -236,6 +236,7 @@ export async function submitMessage(
                             all_day,
                             attendees,
                             recurrence,
+                            event_id,
                           } = JSON.parse(args)
 
                           const start =
@@ -245,6 +246,7 @@ export async function submitMessage(
 
                           const result = await calendar.events.update({
                             calendarId: 'primary',
+                            eventId: event_id,
                             requestBody: {
                               summary,
                               description,
