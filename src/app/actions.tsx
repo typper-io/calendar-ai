@@ -293,7 +293,7 @@ export async function submitMessage(
                       } catch (error: any) {
                         tool_outputs.push({
                           tool_call_id: toolCallId,
-                          output: error.message,
+                          output: JSON.stringify({ error: error.message }),
                         })
                       }
                     }
