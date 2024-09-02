@@ -3,7 +3,6 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useOutsideClick } from '@/hooks/use-outside-click'
 import { useModal } from '@/hooks/use-modal'
 import { format, isSameDay } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
 import { AnimatedTooltip } from '@/components/ui/animated-tooltip'
 import { Button } from '@/components/ui/button'
@@ -34,8 +33,7 @@ export function ExpandedEventModal() {
   }, [activeEvent, setActiveEvent])
 
   function formatDateRange(startDate: Date, endDate: Date): string {
-    const formatDate = (date: Date): string =>
-      format(date, "EEEE, d 'de' MMMM", { locale: ptBR })
+    const formatDate = (date: Date): string => format(date, "EEEE, d 'de' MMMM")
     const formatTime = (date: Date): string => format(date, 'H:mm')
 
     const startFormatted: string = formatDate(startDate)
