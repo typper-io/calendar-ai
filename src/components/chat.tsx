@@ -37,13 +37,17 @@ export function Chat({
         },
       ])
 
-      const response = await submitMessage(input, threadId)
+      const response = await submitMessage(
+        input,
+        threadId,
+      )(async () => {
+        for await (const delta of readStreamableValue<string>(
+          response.threadIdStream,
+        )) {
+          setThreadId(delta!)
+        }
+      })()
 
-      for await (const delta of readStreamableValue<string>(
-        response.threadIdStream,
-      )) {
-        setThreadId(delta!)
-      }
       setMessages((currentMessages) => [...currentMessages, response])
     } catch (error) {
       toast('Error sending message')

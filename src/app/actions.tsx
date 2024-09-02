@@ -110,6 +110,7 @@ export async function submitMessage(
 
             if (event === 'thread.created') {
               threadIdStream.update(data.id)
+              threadId = data.id
             } else if (event === 'thread.run.created') {
               runId = data.id
             } else if (event === 'thread.message.delta') {
