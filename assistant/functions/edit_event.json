@@ -41,7 +41,7 @@
       },
       "event_id": {
         "type": "string",
-        "description": "ID of the event to delete."
+        "description": "ID of the event to edit."
       }
     },
     "additionalProperties": false,

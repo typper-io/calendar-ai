@@ -15,7 +15,7 @@ export function Message({ textStream }: { textStream: StreamableValue }) {
       className="prose flex flex-col gap-2"
       components={{
         a: ({ children, href }) => (
-          <Link href={href!} className="text-foreground">
+          <Link href={href!} className="text-primary">
             {children}
           </Link>
         ),

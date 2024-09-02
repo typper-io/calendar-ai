@@ -14,6 +14,7 @@ import authOptions from '@/app/api/auth/[...nextauth]/authOptions'
 import { google } from 'googleapis'
 import { EventInput } from '@fullcalendar/core/index.js'
 import { Message } from '@/components/message'
+import { Check, Loader2, X } from 'lucide-react'
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -134,6 +135,15 @@ export async function submitMessage(
                       const { name, arguments: args } = fn
 
                       try {
+                        gui.append(
+                          <>
+                            <p className="flex gap-2 items-center">
+                              <Loader2 className="animate-spin" size={16} />
+                              Updating or consulting calendar
+                            </p>
+                          </>,
+                        )
+
                         if (name === 'get_calendar') {
                           const { start_time, end_time, calendar_id } =
                             JSON.parse(args)
@@ -174,14 +184,10 @@ export async function submitMessage(
                             }),
                           )
 
-                          gui.append(<></>)
-
                           tool_outputs.push({
                             tool_call_id: toolCallId,
                             output: JSON.stringify(events),
                           })
-
-                          continue
                         }
 
                         if (name === 'schedule_event') {
@@ -224,14 +230,10 @@ export async function submitMessage(
                             },
                           })
 
-                          gui.append(<></>)
-
                           tool_outputs.push({
                             tool_call_id: toolCallId,
                             output: JSON.stringify(result.data),
                           })
-
-                          continue
                         }
 
                         if (name === 'edit_event') {
@@ -272,14 +274,10 @@ export async function submitMessage(
                             },
                           })
 
-                          gui.append(<></>)
-
                           tool_outputs.push({
                             tool_call_id: toolCallId,
                             output: JSON.stringify(result.data),
                           })
-
-                          continue
                         }
 
                         if (name === 'delete_event') {
@@ -290,16 +288,30 @@ export async function submitMessage(
                             eventId: event_id,
                           })
 
-                          gui.append(<></>)
-
                           tool_outputs.push({
                             tool_call_id: toolCallId,
                             output: JSON.stringify(result.data),
                           })
-
-                          continue
                         }
+
+                        gui.update(
+                          <>
+                            <p className="flex gap-2 items-center">
+                              <Check size={16} />
+                              Calendar updated or consulted
+                            </p>
+                          </>,
+                        )
                       } catch (error: any) {
+                        gui.update(
+                          <>
+                            <p className="flex gap-2 items-center">
+                              <X size={16} className="text-destructive" />
+                              Error updating or consulting calendar
+                            </p>
+                          </>,
+                        )
+
                         tool_outputs.push({
                           tool_call_id: toolCallId,
                           output: JSON.stringify({ error: error.message }),
