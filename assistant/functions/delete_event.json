@@ -8,9 +8,13 @@
       "event_id": {
         "type": "string",
         "description": "ID of the event to delete."
+      },
+      "summary": {
+        "type": "string",
+        "description": "Summary of the event."
       }
     },
     "additionalProperties": false,
-    "required": ["event_id"]
+    "required": ["event_id", "summary"]
   }
 }

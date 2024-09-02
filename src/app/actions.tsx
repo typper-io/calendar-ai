@@ -70,62 +70,62 @@ export async function submitMessage(
     const runQueue = []
 
     ;(async () => {
-      if (threadId) {
-        await openai.beta.threads.messages.create(threadId, {
-          role: 'user',
-          content: question,
-        })
+      try {
+        if (threadId) {
+          await openai.beta.threads.messages.create(threadId, {
+            role: 'user',
+            content: question,
+          })
 
-        let additional_instructions = ''
+          let additional_instructions = ''
 
-        additional_instructions += `<current_time>${new Date().toISOString()}</current_time>`
-        additional_instructions += `<current_user>${session.user?.name}</current_user>`
+          additional_instructions += `<current_time>${new Date().toISOString()}</current_time>`
+          additional_instructions += `<current_user>${session.user?.name}</current_user>`
 
-        const run = await openai.beta.threads.runs.create(threadId, {
-          assistant_id: ASSISTANT_ID!,
-          stream: true,
-          additional_instructions,
-        })
+          const run = await openai.beta.threads.runs.create(threadId, {
+            assistant_id: ASSISTANT_ID!,
+            stream: true,
+            additional_instructions,
+          })
 
-        runQueue.push({ id: generateId(), run })
-      } else {
-        const run = await openai.beta.threads.createAndRun({
-          assistant_id: ASSISTANT_ID!,
-          stream: true,
-          thread: {
-            messages: [{ role: 'user', content: question }],
-          },
-        })
+          runQueue.push({ id: generateId(), run })
+        } else {
+          const run = await openai.beta.threads.createAndRun({
+            assistant_id: ASSISTANT_ID!,
+            stream: true,
+            thread: {
+              messages: [{ role: 'user', content: question }],
+            },
+          })
 
-        runQueue.push({ id: generateId(), run })
-      }
+          runQueue.push({ id: generateId(), run })
+        }
 
-      while (runQueue.length > 0) {
-        const latestRun = runQueue.shift()
+        while (runQueue.length > 0) {
+          const latestRun = runQueue.shift()
 
-        if (latestRun) {
-          for await (const delta of latestRun.run) {
-            const { data, event } = delta
+          if (latestRun) {
+            for await (const delta of latestRun.run) {
+              const { data, event } = delta
 
-            status.update(event)
+              status.update(event)
 
-            if (event === 'thread.created') {
-              threadIdStream.update(data.id)
-              threadId = data.id
-            } else if (event === 'thread.run.created') {
-              runId = data.id
-            } else if (event === 'thread.message.delta') {
-              data.delta.content?.map((part: any) => {
-                if (part.type === 'text') {
-                  if (part.text) {
-                    textStream.append(part.text.value)
+              if (event === 'thread.created') {
+                threadIdStream.update(data.id)
+                threadId = data.id
+              } else if (event === 'thread.run.created') {
+                runId = data.id
+              } else if (event === 'thread.message.delta') {
+                data.delta.content?.map((part: any) => {
+                  if (part.type === 'text') {
+                    if (part.text) {
+                      textStream.append(part.text.value)
+                    }
                   }
-                }
-              })
-            } else if (event === 'thread.run.requires_action') {
-              if (data.required_action) {
-                if (data.required_action.type === 'submit_tool_outputs') {
-                  try {
+                })
+              } else if (event === 'thread.run.requires_action') {
+                if (data.required_action) {
+                  if (data.required_action.type === 'submit_tool_outputs') {
                     const { tool_calls } =
                       data.required_action.submit_tool_outputs
                     const tool_outputs = []
@@ -135,11 +135,18 @@ export async function submitMessage(
                       const { name, arguments: args } = fn
 
                       try {
+                        const actionTranslated: Record<string, string> = {
+                          schedule_event: 'Schedul',
+                          edit_event: 'Edit',
+                          delete_event: 'Delet',
+                          get_calendar: 'Consult',
+                        }
+
                         gui.append(
                           <>
                             <p className="flex gap-2 items-center">
                               <Loader2 className="animate-spin" size={16} />
-                              Updating or consulting calendar
+                              {actionTranslated[name]}ing events
                             </p>
                           </>,
                         )
@@ -298,7 +305,7 @@ export async function submitMessage(
                           <>
                             <p className="flex gap-2 items-center">
                               <Check size={16} />
-                              Calendar updated or consulted
+                              {actionTranslated[name]}ed events
                             </p>
                           </>,
                         )
@@ -307,7 +314,7 @@ export async function submitMessage(
                           <>
                             <p className="flex gap-2 items-center">
                               <X size={16} className="text-destructive" />
-                              Error updating or consulting calendar
+                              Error on taking this action
                             </p>
                           </>,
                         )
@@ -330,23 +337,19 @@ export async function submitMessage(
                       )
 
                     runQueue.push({ id: generateId(), run: nextRun })
-                  } catch (error: any) {
-                    status.done()
-                    textUIStream.done()
-                    gui.done()
-                    threadIdStream.done()
                   }
                 }
               }
             }
           }
         }
+      } finally {
+        status.done()
+        textUIStream.done()
+        gui.done()
+        textStream.done()
+        threadIdStream.done()
       }
-
-      status.done()
-      textUIStream.done()
-      gui.done()
-      threadIdStream.done()
     })()
 
     return {
