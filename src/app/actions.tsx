@@ -206,10 +206,12 @@ export async function submitMessage(
                               start: {
                                 dateTime: all_day ? undefined : start,
                                 date: all_day ? start.split('T')[0] : undefined,
+                                timeZone: 'America/Washington',
                               },
                               end: {
                                 dateTime: all_day ? undefined : end,
                                 date: all_day ? end.split('T')[0] : undefined,
+                                timeZone: 'America/Washington',
                               },
                               attendees: attendees?.map((email: string) => ({
                                 email,
