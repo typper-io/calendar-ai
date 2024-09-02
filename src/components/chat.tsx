@@ -37,10 +37,9 @@ export function Chat({
         },
       ])
 
-      const response = await submitMessage(
-        input,
-        threadId,
-      )(async () => {
+      const response = await submitMessage(input, threadId)
+
+      ;(async () => {
         for await (const delta of readStreamableValue<string>(
           response.threadIdStream,
         )) {
@@ -116,9 +115,7 @@ export function Chat({
                 </Markdown>
               </div>
             ) : (
-              <>
-                <div>{message.text}</div>
-              </>
+              <>{message.text}</>
             )}
           </div>
         ))}
