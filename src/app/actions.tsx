@@ -193,7 +193,11 @@ export async function submitMessage(
                             all_day,
                             attendees,
                             recurrence,
+                            time_zone,
                           } = JSON.parse(args)
+
+                          const eventTimeZone =
+                            time_zone || 'America/Los_Angeles'
 
                           const start = new Date(start_time).toISOString()
                           const end = new Date(end_time).toISOString()
@@ -206,12 +210,12 @@ export async function submitMessage(
                               start: {
                                 dateTime: all_day ? undefined : start,
                                 date: all_day ? start.split('T')[0] : undefined,
-                                timeZone: 'America/Washington',
+                                timeZone: eventTimeZone,
                               },
                               end: {
                                 dateTime: all_day ? undefined : end,
                                 date: all_day ? end.split('T')[0] : undefined,
-                                timeZone: 'America/Washington',
+                                timeZone: eventTimeZone,
                               },
                               attendees: attendees?.map((email: string) => ({
                                 email,
