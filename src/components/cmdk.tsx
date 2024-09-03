@@ -150,12 +150,21 @@ export function CommandK({
                 <span>{`${foundTime.start?.date().toLocaleString()}  ${foundTime.end ? `- ${foundTime.end.date().toLocaleString()}` : ''}`}</span>
               </CommandItem>
             )}
-            {foundEmails.map((email, index) => (
-              <CommandItem key={index} className="gap-2">
-                <Mail size={16} />
-                <span>{email}</span>
+
+            {foundEmails.length > 0 && (
+              <CommandItem className="gap-2">
+                <Mail size={16} className="flex-shrink-0" />
+                <div className="flex flex-wrap">
+                  {foundEmails.map((email, index) => (
+                    <span key={email + index}>
+                      {email}
+                      {index !== foundEmails.length - 1 ? ', ' : ''}
+                    </span>
+                  ))}
+                </div>
               </CommandItem>
-            ))}
+            )}
+
             {getEventTitle() && (
               <CommandItem className="gap-2">
                 <Pen size={16} />

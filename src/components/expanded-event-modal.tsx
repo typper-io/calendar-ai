@@ -76,7 +76,7 @@ export function ExpandedEventModal() {
         <motion.div
           layoutId={`card-${activeEvent.uniqueId}`}
           ref={ref}
-          className="w-full max-w-[500px] h-full md:h-fit md:max-h-[90%] bg-background/60 rounded-md"
+          className="w-full max-w-[500px] h-full md:h-fit md:max-h-[90%] bg-background/80 rounded-md"
         >
           <div className="backdrop-blur-sm w-full h-full flex flex-col overflow-hidden items-start gap-4 py-4 rounded-md">
             <motion.p
