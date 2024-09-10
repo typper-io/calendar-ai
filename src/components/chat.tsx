@@ -15,13 +15,27 @@ import { toast } from 'sonner'
 export function Chat({
   closeChat,
   chatOpen,
+  refetchEvents,
 }: {
   closeChat: () => void
   chatOpen: string
+  refetchEvents?: () => void // TODO make this work
 }) {
   const [input, setInput] = useState(chatOpen)
   const [messages, setMessages] = useState<ClientMessage[]>([])
   const [threadId, setThreadId] = useState('')
+  const [_refetchJobs, setRefetchJobs] = useState<
+    Array<{
+      action: string
+      [key: string]: any
+    }>
+  >([])
+  const [_proceededRefetchJobs, _setProceededRefetchJobs] = useState<
+    Array<{
+      action: string
+      [key: string]: any
+    }>
+  >([]) // TODO set when refetchJobs is processed
 
   const { submitMessage } = useActions()
 
@@ -44,6 +58,17 @@ export function Chat({
           response.threadIdStream,
         )) {
           setThreadId(delta!)
+        }
+      })()
+      ;(async () => {
+        for await (const delta of readStreamableValue<
+          Array<{
+            action: string
+            [key: string]: any
+          }>
+        >(response.refetchJobsStream)) {
+          setRefetchJobs(delta!)
+          refetchEvents?.() // make this work properly
         }
       })()
 

@@ -26,6 +26,10 @@ export interface ClientMessage {
   text: ReactNode
   gui: ReactNode
   threadIdStream?: StreamableValue<string, any>
+  refetchJobsStream?: StreamableValue<
+    Array<{ action: string; [key: string]: any }>,
+    any
+  >
 }
 
 const ASSISTANT_ID = process.env.ASSISTANT_ID
@@ -66,8 +70,15 @@ export async function submitMessage(
     )
     const gui = createStreamableUI()
     const threadIdStream = createStreamableValue(threadId)
+    const refetchJobsStream = createStreamableValue<
+      Array<{
+        action: string
+        [key: string]: any
+      }>
+    >([])
 
     const runQueue = []
+    const refetchJobs = []
 
     ;(async () => {
       try {
@@ -237,6 +248,14 @@ export async function submitMessage(
                             },
                           })
 
+                          refetchJobs.push({
+                            action: 'schedule_event',
+                            start_time,
+                            end_time,
+                          })
+
+                          refetchJobsStream.update(refetchJobs)
+
                           tool_outputs.push({
                             tool_call_id: toolCallId,
                             output: JSON.stringify(result.data),
@@ -349,6 +368,7 @@ export async function submitMessage(
         gui.done()
         textStream.done()
         threadIdStream.done()
+        refetchJobsStream.done()
       }
     })()
 
@@ -358,6 +378,7 @@ export async function submitMessage(
       text: textUIStream.value,
       gui: gui.value,
       threadIdStream: threadIdStream.value,
+      refetchJobsStream: refetchJobsStream.value,
     }
   } catch (error: any) {
     return {
