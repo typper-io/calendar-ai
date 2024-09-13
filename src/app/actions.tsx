@@ -26,10 +26,7 @@ export interface ClientMessage {
   text: ReactNode
   gui: ReactNode
   threadIdStream?: StreamableValue<string, any>
-  refetchJobsStream?: StreamableValue<
-    Array<{ action: string; [key: string]: any }>,
-    any
-  >
+  updateEventsStream?: StreamableValue<Array<UpdateEvent>, any>
 }
 
 const ASSISTANT_ID = process.env.ASSISTANT_ID
@@ -70,15 +67,10 @@ export async function submitMessage(
     )
     const gui = createStreamableUI()
     const threadIdStream = createStreamableValue(threadId)
-    const refetchJobsStream = createStreamableValue<
-      Array<{
-        action: string
-        [key: string]: any
-      }>
-    >([])
+    const updateEventsStream = createStreamableValue<Array<UpdateEvent>>([])
 
     const runQueue = []
-    const refetchJobs = []
+    const updatedEvents: Array<UpdateEvent> = []
 
     ;(async () => {
       try {
@@ -248,13 +240,12 @@ export async function submitMessage(
                             },
                           })
 
-                          refetchJobs.push({
+                          updatedEvents.push({
                             action: 'schedule_event',
-                            start_time,
-                            end_time,
+                            event_id: result.data.id!,
                           })
 
-                          refetchJobsStream.update(refetchJobs)
+                          updateEventsStream.update(updatedEvents)
 
                           tool_outputs.push({
                             tool_call_id: toolCallId,
@@ -314,6 +305,13 @@ export async function submitMessage(
                             eventId: event_id,
                           })
 
+                          updatedEvents.push({
+                            action: 'delete_event',
+                            event_id,
+                          })
+
+                          updateEventsStream.update(updatedEvents)
+
                           tool_outputs.push({
                             tool_call_id: toolCallId,
                             output: JSON.stringify(result.data),
@@ -368,7 +366,7 @@ export async function submitMessage(
         gui.done()
         textStream.done()
         threadIdStream.done()
-        refetchJobsStream.done()
+        updateEventsStream.done()
       }
     })()
 
@@ -378,7 +376,7 @@ export async function submitMessage(
       text: textUIStream.value,
       gui: gui.value,
       threadIdStream: threadIdStream.value,
-      refetchJobsStream: refetchJobsStream.value,
+      updateEventsStream: updateEventsStream.value,
     }
   } catch (error: any) {
     return {

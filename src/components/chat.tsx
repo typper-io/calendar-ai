@@ -15,27 +15,15 @@ import { toast } from 'sonner'
 export function Chat({
   closeChat,
   chatOpen,
-  refetchEvents,
+  updateEventList,
 }: {
   closeChat: () => void
   chatOpen: string
-  refetchEvents?: () => void // TODO make this work
+  updateEventList: (jobs: Array<UpdateEvent>) => void
 }) {
   const [input, setInput] = useState(chatOpen)
   const [messages, setMessages] = useState<ClientMessage[]>([])
   const [threadId, setThreadId] = useState('')
-  const [_refetchJobs, setRefetchJobs] = useState<
-    Array<{
-      action: string
-      [key: string]: any
-    }>
-  >([])
-  const [_proceededRefetchJobs, _setProceededRefetchJobs] = useState<
-    Array<{
-      action: string
-      [key: string]: any
-    }>
-  >([]) // TODO set when refetchJobs is processed
 
   const { submitMessage } = useActions()
 
@@ -53,6 +41,7 @@ export function Chat({
 
       const response = await submitMessage(input, threadId)
 
+      console.log(response.updateEventsStream)
       ;(async () => {
         for await (const delta of readStreamableValue<string>(
           response.threadIdStream,
@@ -61,14 +50,14 @@ export function Chat({
         }
       })()
       ;(async () => {
-        for await (const delta of readStreamableValue<
-          Array<{
-            action: string
-            [key: string]: any
-          }>
-        >(response.refetchJobsStream)) {
-          setRefetchJobs(delta!)
-          refetchEvents?.() // make this work properly
+        for await (const jobs of readStreamableValue<Array<UpdateEvent>>(
+          response.updateEventsStream,
+        )) {
+          console.log(jobs)
+
+          if (!jobs || jobs.length === 0) return
+
+          updateEventList(jobs)
         }
       })()
 

@@ -65,7 +65,14 @@ export const FloatingDock = ({
               <IconContainer mouseX={mouseX} key={item.title} {...item} />
             ))
           ) : (
-            <Chat chatOpen={chatOpen} closeChat={() => setChatOpen('')} />
+            <Chat
+              chatOpen={chatOpen}
+              closeChat={() => setChatOpen('')}
+              updateEventList={(jobs: UpdateEvent[]) => {
+                console.log(jobs)
+                return
+              }}
+            />
           )}
         </AnimatePresence>
       </motion.div>
