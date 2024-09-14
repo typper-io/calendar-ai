@@ -57,6 +57,8 @@ const config = {
           DEFAULT: 'hsla(var(--card), <alpha-value>)',
           foreground: 'hsla(var(--card-foreground), <alpha-value>)',
         },
+        'secondary-brand': 'hsla(87, 95%, 44%, <alpha-value>)',
+        'tertiary-brand': 'hsla(340, 100%, 84%, <alpha-value>)',
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -79,6 +81,10 @@ const config = {
       },
       blur: {
         blur: 'blur(6px)',
+      },
+      backgroundImage: {
+        stripes:
+          'repeating-linear-gradient(45deg, hsla(var(--primary), 0.3) 0, hsla(var(--primary), 0.3) 3px, transparent 3px, transparent 10px)',
       },
     },
     typography: ({ theme }: { theme: (data: string) => string }) => ({

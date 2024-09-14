@@ -1,31 +1,49 @@
+'use client'
+
 import {
   CommandDialog,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command'
-import { CalendarIcon, Mail, Clock, Pen, Sparkle, Loader2 } from 'lucide-react'
-import chrono from 'chrono-node'
-import { add } from 'date-fns'
+import { CalendarIcon, Sparkle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { Dispatch, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useChat } from '@/hooks/use-chat'
+import { useCommandK } from '@/hooks/use-command'
+import CustomMentionsInput, {
+  TextSegment,
+} from '@/components/ui/mentions-input'
+import { useEvents } from '@/hooks/use-events'
 
-export function CommandK({
-  isOpen,
-  setIsOpen,
-  setChatOpen,
-}: Readonly<{
-  isOpen: boolean
-  setIsOpen: Dispatch<React.SetStateAction<boolean>>
-  setChatOpen: Dispatch<React.SetStateAction<string>>
-}>) {
+export function CommandK() {
+  const { setChatOpen } = useChat()
+  const { commandKOpen, setCommandKOpen } = useCommandK()
+  const [segments, setSegments] = useState<TextSegment[]>([])
+  const { refetchEvents } = useEvents()
+
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        setCommandKOpen(!commandKOpen)
+      }
+    }
+
+    document.addEventListener('keydown', down)
+    return () => document.removeEventListener('keydown', down)
+  }, [commandKOpen, setCommandKOpen])
+
   const [inputValue, setInputValue] = useState('')
-  const [foundTime, setFoundTime] = useState<Record<string, any> | null>(null)
-  const [foundEmails, setFoundEmails] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
+  const [contacts, setContacts] = useState<
+    {
+      id: string
+      display: string
+    }[]
+  >([])
 
   const items = [
     {
@@ -36,25 +54,25 @@ export function CommandK({
 
   const [filteredItems, setFilteredItems] = useState<any[]>(items)
 
-  const findEmails = (text: string) => {
-    const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g
-    const emails = text.match(emailRegex) || []
-    return Array.from(new Set(emails))
-  }
+  useEffect(() => {
+    const fetchContacts = async () => {
+      const response = await fetch('/api/contacts')
+
+      if (!response.ok) {
+        return toast('Failed to fetch contacts.')
+      }
+
+      const data = await response.json()
+      setContacts(
+        data.contacts.map((email: string) => ({ id: email, display: email })),
+      )
+    }
+
+    fetchContacts()
+  }, [])
 
   const handleInputChange = (value: string) => {
-    setInputValue(value)
-    const parsedDates = chrono.parse(value)
-    setFoundTime(parsedDates.length > 0 ? parsedDates[0] : null)
-    setFoundEmails(findEmails(value))
     setFilteredItems(items.filter((item) => customFilter(item.title, value)))
-  }
-
-  const getEventTitle = () => {
-    return inputValue
-      .replace(foundTime?.text || '', '')
-      .replace(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, '')
-      .trim()
   }
 
   const customFilter = (value: string, search: string, keywords?: string[]) => {
@@ -72,7 +90,9 @@ export function CommandK({
       return 1
     }
 
-    return value.includes(search) ? 1 : 0
+    return value.toLocaleLowerCase().includes(search.toLocaleLowerCase())
+      ? 1
+      : 0
   }
 
   const handleCreateEvent = async () => {
@@ -81,13 +101,26 @@ export function CommandK({
     setInputValue('')
     setLoading(true)
 
+    const summary = segments
+      .filter((segment) => segment.type === 'normal')
+      .map((segment) => segment.text)
+      .join(' ')
+      .replace(/\s+/g, ' ')
+
+    const start =
+      segments.find((segment) => segment.type === 'date')?.value || new Date()
+
+    const end = new Date(
+      new Date(start).getTime() + 60 * 60 * 1000,
+    ).toISOString()
+
+    const attendees = segments.filter((segment) => segment.type === 'email')
+
     const eventData = {
-      summary: getEventTitle(),
-      start: foundTime?.start.date().toISOString(),
-      end:
-        foundTime?.end?.date().toISOString() ||
-        add(foundTime?.start.date(), { hours: 1 }).toISOString(),
-      attendees: foundEmails.map((email) => ({ email })),
+      summary: summary,
+      start: start,
+      end: end,
+      attendees: attendees.map((attendee) => ({ email: attendee.value })),
     }
 
     const response = await fetch('/api/calendar/events', {
@@ -104,34 +137,29 @@ export function CommandK({
       return toast('Failed to create event.')
     }
 
-    setIsOpen(false)
+    await refetchEvents()
+
+    setCommandKOpen(false)
     setLoading(false)
     toast('Event has been created.')
   }
 
   return (
-    <CommandDialog open={isOpen} onOpenChange={setIsOpen}>
-      <CommandInput
-        placeholder="Type a command or search..."
-        onValueChange={handleInputChange}
-        value={inputValue}
-      />
+    <CommandDialog open={commandKOpen} onOpenChange={setCommandKOpen}>
+      <div className="flex items-center border-b p-3">
+        <CustomMentionsInput
+          users={contacts}
+          onChange={handleInputChange}
+          segments={segments}
+          setSegments={setSegments}
+          placeholder="Type a command or search..."
+        />
+      </div>
+
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
 
         <CommandGroup heading="Actions">
-          <CommandItem
-            onSelect={() => {
-              setIsOpen(false)
-              setChatOpen(inputValue)
-              setInputValue('')
-            }}
-            className="gap-2"
-          >
-            <Sparkle size={16} />
-            <span>Ask assistant</span>
-          </CommandItem>
-
           <CommandItem onSelect={handleCreateEvent} className="gap-2">
             {loading ? (
               <Loader2 className="animate-spin" size={16} />
@@ -140,39 +168,19 @@ export function CommandK({
             )}
             <span>Schedule event</span>
           </CommandItem>
+
+          <CommandItem
+            onSelect={() => {
+              setCommandKOpen(false)
+              setChatOpen(inputValue)
+              setInputValue('')
+            }}
+            className="gap-2"
+          >
+            <Sparkle size={16} />
+            <span>Ask assistant</span>
+          </CommandItem>
         </CommandGroup>
-
-        {(foundTime || foundEmails.length > 0) && (
-          <CommandGroup heading="Event Details">
-            {foundTime && (
-              <CommandItem className="gap-2">
-                <Clock size={16} />
-                <span>{`${foundTime.start?.date().toLocaleString()}  ${foundTime.end ? `- ${foundTime.end.date().toLocaleString()}` : ''}`}</span>
-              </CommandItem>
-            )}
-
-            {foundEmails.length > 0 && (
-              <CommandItem className="gap-2">
-                <Mail size={16} className="flex-shrink-0" />
-                <div className="flex flex-wrap">
-                  {foundEmails.map((email, index) => (
-                    <span key={email + index}>
-                      {email}
-                      {index !== foundEmails.length - 1 ? ', ' : ''}
-                    </span>
-                  ))}
-                </div>
-              </CommandItem>
-            )}
-
-            {getEventTitle() && (
-              <CommandItem className="gap-2">
-                <Pen size={16} />
-                <span>{getEventTitle()}</span>
-              </CommandItem>
-            )}
-          </CommandGroup>
-        )}
 
         <CommandSeparator />
 
