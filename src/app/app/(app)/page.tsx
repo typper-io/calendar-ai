@@ -1,17 +1,16 @@
 'use client'
 
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
-import { DatesSetArg, EventInput } from '@fullcalendar/core'
+import { DatesSetArg } from '@fullcalendar/core'
 import CustomHeader from '@/components/custom-header'
-import { useSession } from 'next-auth/react'
 import { ExpandedEventModal } from '@/components/expanded-event-modal'
 import { ExpandableEvent } from '@/components/expandable-event'
 import { ModalProvider } from '@/hooks/use-modal'
-import { toast } from 'sonner'
+import { useEvents } from '@/hooks/use-events'
 
 export interface CalendarEvent {
   id: string
@@ -32,65 +31,40 @@ export interface College {
 }
 
 export default function AppHome() {
-  const { data: session } = useSession()
+  const {
+    events,
+    refetchEvents,
+    isRangeCached,
+    setCurrentStart,
+    setCurrentEnd,
+    currentEnd,
+    currentStart,
+  } = useEvents()
 
-  const [events, setEvents] = useState<EventInput[]>([])
-  const [cachedRanges, setCachedRanges] = useState<
-    { start: string; end: string }[]
-  >([])
   const calendarRef = useRef<FullCalendar>(null)
 
-  const fetchEvents = useCallback(
-    async (start: string, end: string) => {
-      if (!session) return
-
-      try {
-        const response = await fetch(
-          `/api/calendar/events?start=${start}&end=${end}`,
-        )
-        if (!response.ok) {
-          throw new Error('Failed to fetch events')
-        }
-
-        const data = await response.json()
-
-        setEvents((prevEvents) => {
-          const newEvents = data.events?.filter?.(
-            (newEvent: EventInput) =>
-              !prevEvents.some(
-                (existingEvent) => existingEvent.id === newEvent.id,
-              ),
-          )
-
-          return [...prevEvents, ...(newEvents || [])]
-        })
-
-        setCachedRanges((prevRanges) => [...prevRanges, { start, end }])
-      } catch (error) {
-        toast('Failed to fetch events')
-      }
-    },
-    [session],
-  )
-
-  const isRangeCached = useCallback(
-    (start: string, end: string) => {
-      return cachedRanges.some(
-        (range) => range.start <= start && range.end >= end,
-      )
-    },
-    [cachedRanges],
-  )
   const handleDatesSet = useCallback(
-    (arg: DatesSetArg) => {
+    async (arg: DatesSetArg) => {
       const start = arg.startStr
       const end = arg.endStr
 
-      if (!isRangeCached(start, end)) {
-        fetchEvents(start, end)
+      if (start !== currentStart || end !== currentEnd) {
+        setCurrentStart(start)
+        setCurrentEnd(end)
+
+        if (!isRangeCached(start, end)) {
+          await refetchEvents(start, end)
+        }
       }
     },
-    [fetchEvents, isRangeCached],
+    [
+      isRangeCached,
+      refetchEvents,
+      setCurrentEnd,
+      setCurrentStart,
+      currentStart,
+      currentEnd,
+    ],
   )
 
   return (

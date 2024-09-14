@@ -13,11 +13,16 @@ import { toast } from 'sonner'
 import { useEffect, useState } from 'react'
 import { useChat } from '@/hooks/use-chat'
 import { useCommandK } from '@/hooks/use-command'
-import CustomMentionsInput from '@/components/ui/mentions-input'
+import CustomMentionsInput, {
+  TextSegment,
+} from '@/components/ui/mentions-input'
+import { useEvents } from '@/hooks/use-events'
 
 export function CommandK() {
   const { setChatOpen } = useChat()
   const { commandKOpen, setCommandKOpen } = useCommandK()
+  const [segments, setSegments] = useState<TextSegment[]>([])
+  const { refetchEvents } = useEvents()
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -96,11 +101,26 @@ export function CommandK() {
     setInputValue('')
     setLoading(true)
 
+    const summary = segments
+      .filter((segment) => segment.type === 'normal')
+      .map((segment) => segment.text)
+      .join(' ')
+      .replace(/\s+/g, ' ')
+
+    const start =
+      segments.find((segment) => segment.type === 'date')?.value || new Date()
+
+    const end = new Date(
+      new Date(start).getTime() + 60 * 60 * 1000,
+    ).toISOString()
+
+    const attendees = segments.filter((segment) => segment.type === 'email')
+
     const eventData = {
-      summary: '',
-      start: '',
-      end: '',
-      attendees: [],
+      summary: summary,
+      start: start,
+      end: end,
+      attendees: attendees.map((attendee) => ({ email: attendee.value })),
     }
 
     const response = await fetch('/api/calendar/events', {
@@ -117,6 +137,8 @@ export function CommandK() {
       return toast('Failed to create event.')
     }
 
+    await refetchEvents()
+
     setCommandKOpen(false)
     setLoading(false)
     toast('Event has been created.')
@@ -128,9 +150,8 @@ export function CommandK() {
         <CustomMentionsInput
           users={contacts}
           onChange={handleInputChange}
-          segmentsUpdate={(segments) => {
-            console.log(segments)
-          }}
+          segments={segments}
+          setSegments={setSegments}
           placeholder="Type a command or search..."
         />
       </div>

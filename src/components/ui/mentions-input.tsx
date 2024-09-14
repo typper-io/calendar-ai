@@ -1,10 +1,18 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react'
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  Dispatch,
+  SetStateAction,
+} from 'react'
 import chrono from 'chrono-node'
 import { cn } from '@/lib/utils'
 
-interface TextSegment {
+export interface TextSegment {
   text: string
   type: 'normal' | 'date' | 'email' | 'mention'
+  value: string
 }
 
 interface User {
@@ -24,14 +32,14 @@ const HighlightComponent: React.FC<HighlightComponentProps> = ({
   const colorClasses: Record<TextSegment['type'], string> = {
     email: 'bg-primary',
     date: 'bg-secondary-brand',
-    mention: 'bg-tertiary-brand',
+    mention: 'bg-primary',
     normal: '',
   }
 
   return (
     <span
       className={cn(
-        'rounded-md text-primary-foreground p-1 cursor-pointer z-50',
+        'rounded-md text-primary-foreground p-1 cursor-pointer z-50 w-fit h-fit',
         colorClasses[type],
       )}
     >
@@ -44,17 +52,18 @@ interface CustomMentionsInputProps {
   placeholder?: string
   users: User[]
   onChange?: (value: string) => void
-  segmentsUpdate?: (segments: Array<TextSegment>) => void
+  segments: TextSegment[]
+  setSegments: Dispatch<SetStateAction<TextSegment[]>>
 }
 
 const CustomMentionsInput: React.FC<CustomMentionsInputProps> = ({
   placeholder = 'Type your message...',
   users,
   onChange,
-  segmentsUpdate,
+  segments,
+  setSegments,
 }) => {
   const [inputValue, setInputValue] = useState('')
-  const [segments, setSegments] = useState<TextSegment[]>([])
   const [cursorPosition, setCursorPosition] = useState(0)
   const [showDropdown, setShowDropdown] = useState(false)
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
@@ -65,77 +74,88 @@ const CustomMentionsInput: React.FC<CustomMentionsInputProps> = ({
     textareaRef.current?.focus()
   }, [])
 
-  const processText = useCallback(
-    (text: string) => {
-      const newSegments: TextSegment[] = []
-      let remainingText = text
+  const processText = useCallback((text: string) => {
+    const newSegments: TextSegment[] = []
+    let remainingText = text
 
-      const patterns: Array<{
-        regex: RegExp
+    const patterns: Array<{
+      regex: RegExp
+      type: TextSegment['type']
+    }> = [
+      {
+        regex: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
+        type: 'email',
+      },
+      { regex: /@(?!.*@.*\b)\w+/g, type: 'mention' },
+    ]
+
+    while (remainingText.length > 0) {
+      let match: {
+        text: string
+        index: number
         type: TextSegment['type']
-      }> = [
-        { regex: /@\w+/g, type: 'mention' },
-        {
-          regex: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
-          type: 'email',
-        },
-      ]
+        value: string
+      } | null = null
+      let earliestIndex = remainingText.length
 
-      while (remainingText.length > 0) {
-        let match: {
-          text: string
-          index: number
-          type: TextSegment['type']
-        } | null = null
-        let earliestIndex = remainingText.length
-
-        const parsedDates = chrono.parse(remainingText)
-        if (parsedDates.length > 0) {
-          const dateMatch = parsedDates[0]
-          if (dateMatch.index < earliestIndex) {
-            match = {
-              text: dateMatch.text,
-              index: dateMatch.index,
-              type: 'date',
-            }
-            earliestIndex = dateMatch.index
+      const parsedDates = chrono.parse(remainingText)
+      if (parsedDates.length > 0) {
+        const dateMatch = parsedDates[0]
+        if (dateMatch.index < earliestIndex) {
+          match = {
+            text: dateMatch.text,
+            index: dateMatch.index,
+            type: 'date',
+            value: dateMatch.start?.date()?.toISOString() || '',
           }
-        }
-
-        patterns.forEach(({ regex, type }) => {
-          regex.lastIndex = 0 // Reset regex state
-          const regexMatch = regex.exec(remainingText)
-          if (regexMatch && regexMatch.index < earliestIndex) {
-            match = { text: regexMatch[0], index: regexMatch.index, type }
-            earliestIndex = regexMatch.index
-          }
-        })
-
-        if (match) {
-          if (match.index > 0) {
-            newSegments.push({
-              text: remainingText.slice(0, match.index),
-              type: 'normal',
-            })
-          }
-          newSegments.push({ text: match.text, type: match.type })
-          remainingText = remainingText.slice(match.index + match.text.length)
-        } else {
-          newSegments.push({ text: remainingText, type: 'normal' })
-          break
+          earliestIndex = dateMatch.index
         }
       }
 
-      segmentsUpdate?.(newSegments)
+      patterns.forEach(({ regex, type }) => {
+        regex.lastIndex = 0
+        const regexMatch = regex.exec(remainingText)
+        if (regexMatch && regexMatch.index < earliestIndex) {
+          match = {
+            text: regexMatch[0],
+            index: regexMatch.index,
+            type,
+            value: regexMatch[0],
+          }
+          earliestIndex = regexMatch.index
+        }
+      })
 
-      return newSegments
-    },
-    [segmentsUpdate],
-  )
+      if (match) {
+        if (match.index > 0) {
+          newSegments.push({
+            text: remainingText.slice(0, match.index),
+            type: 'normal',
+            value: '',
+          })
+        }
+        newSegments.push({
+          text: match.text,
+          type: match.type,
+          value: match.value,
+        })
+        remainingText = remainingText.slice(match.index + match.text.length)
+      } else {
+        newSegments.push({
+          text: remainingText,
+          type: 'normal',
+          value: remainingText,
+        })
+        break
+      }
+    }
+
+    return newSegments
+  }, [])
 
   useEffect(() => {
     setSegments(processText(inputValue))
-  }, [inputValue, processText])
+  }, [inputValue, processText, setSegments])
 
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onChange?.(e.target.value)
@@ -168,12 +188,12 @@ const CustomMentionsInput: React.FC<CustomMentionsInputProps> = ({
     const lastAtSymbol = inputValue.lastIndexOf('@', cursorPosition - 1)
     const newInputValue =
       inputValue.slice(0, lastAtSymbol) +
-      `@${user.display} ` +
+      `${user.display} ` +
       inputValue.slice(cursorPosition)
     setInputValue(newInputValue)
     setShowDropdown(false)
     if (textareaRef.current) {
-      const newCursorPosition = lastAtSymbol + user.display.length + 2
+      const newCursorPosition = lastAtSymbol + user.display.length + 1
       textareaRef.current.setSelectionRange(
         newCursorPosition,
         newCursorPosition,
@@ -255,12 +275,14 @@ const CustomMentionsInput: React.FC<CustomMentionsInputProps> = ({
       />
       <div
         onClick={handleClick}
-        className="px-3 py-2 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-none disabled:cursor-not-allowed disabled:opacity-50 break-words leading-8"
+        className="px-3 py-2 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-none disabled:cursor-not-allowed disabled:opacity-50 leading-8 flex flex-wrap gap-0.5 items-center"
       >
         {inputValue ? (
           renderTextWithCursor()
         ) : (
-          <span className="text-muted-foreground">{placeholder}</span>
+          <span className="text-muted-foreground w-fit h-fit">
+            {placeholder}
+          </span>
         )}
       </div>
       {showDropdown && (
