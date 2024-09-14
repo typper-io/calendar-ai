@@ -11,6 +11,7 @@ import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import { toast } from 'sonner'
+import { format } from 'date-fns'
 
 export function Chat({
   closeChat,
@@ -39,9 +40,11 @@ export function Chat({
         },
       ])
 
-      const response = await submitMessage(input, threadId)
+      const inputWithToday =
+        `Today is ${format(new Date(), 'do MMMM yyyy')}\n\n` + input
 
-      console.log(response.updateEventsStream)
+      const response = await submitMessage(inputWithToday, threadId)
+
       ;(async () => {
         for await (const delta of readStreamableValue<string>(
           response.threadIdStream,
@@ -53,9 +56,7 @@ export function Chat({
         for await (const jobs of readStreamableValue<Array<UpdateEvent>>(
           response.updateEventsStream,
         )) {
-          console.log(jobs)
-
-          if (!jobs || jobs.length === 0) return
+          if (!jobs || jobs.length === 0) continue
 
           updateEventList(jobs)
         }
@@ -63,6 +64,8 @@ export function Chat({
 
       setMessages((currentMessages) => [...currentMessages, response])
     } catch (error) {
+      console.log(error)
+
       toast('Error sending message')
     }
   }

@@ -243,9 +243,10 @@ export async function submitMessage(
                           updatedEvents.push({
                             action: 'schedule_event',
                             event_id: result.data.id!,
+                            payload: JSON.stringify(result),
                           })
 
-                          updateEventsStream.update(updatedEvents)
+                          updateEventsStream.update([...updatedEvents])
 
                           tool_outputs.push({
                             tool_call_id: toolCallId,
@@ -270,26 +271,38 @@ export async function submitMessage(
                           const end =
                             end_time && new Date(end_time).toISOString()
 
-                          const result = await calendar.events.update({
-                            calendarId: 'primary',
-                            eventId: event_id,
-                            requestBody: {
-                              summary,
-                              description,
-                              start: {
-                                dateTime: all_day ? undefined : start,
-                                date: all_day ? start.split('T')[0] : undefined,
+                          const result = await calendar.events.update(
+                            {
+                              calendarId: 'primary',
+                              eventId: event_id,
+                              requestBody: {
+                                summary,
+                                description,
+                                start: {
+                                  dateTime: all_day ? undefined : start,
+                                  date: all_day
+                                    ? start.split('T')[0]
+                                    : undefined,
+                                },
+                                end: {
+                                  dateTime: all_day ? undefined : end,
+                                  date: all_day ? end.split('T')[0] : undefined,
+                                },
+                                attendees: attendees?.map((email: string) => ({
+                                  email,
+                                })),
+                                recurrence,
                               },
-                              end: {
-                                dateTime: all_day ? undefined : end,
-                                date: all_day ? end.split('T')[0] : undefined,
-                              },
-                              attendees: attendees?.map((email: string) => ({
-                                email,
-                              })),
-                              recurrence,
                             },
+                            {},
+                          )
+
+                          updatedEvents.push({
+                            action: 'edit_event',
+                            event_id,
+                            payload: JSON.stringify(result),
                           })
+                          updateEventsStream.update([...updatedEvents])
 
                           tool_outputs.push({
                             tool_call_id: toolCallId,
@@ -309,8 +322,7 @@ export async function submitMessage(
                             action: 'delete_event',
                             event_id,
                           })
-
-                          updateEventsStream.update(updatedEvents)
+                          updateEventsStream.update([...updatedEvents])
 
                           tool_outputs.push({
                             tool_call_id: toolCallId,

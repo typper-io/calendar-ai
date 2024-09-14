@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -29,7 +29,7 @@ export interface College {
   organization: string
 }
 
-export function Calendar() {
+export function Calendar({ updatedEvents }: { updatedEvents: UpdateEvent[] }) {
   const { data: session } = useSession()
 
   const [events, setEvents] = useState<EventInput[]>([])
@@ -51,6 +51,8 @@ export function Calendar() {
         }
 
         const data = await response.json()
+
+        console.log(data)
 
         setEvents((prevEvents) => {
           const newEvents = data.events?.filter?.(
@@ -90,6 +92,22 @@ export function Calendar() {
     },
     [fetchEvents, isRangeCached],
   )
+
+  useEffect(() => {
+    if (updatedEvents.length === 0) return
+
+    for (const event of updatedEvents) {
+      if (event.action === 'schedule_event') {
+        setEvents((prevEvents) => {
+          console.log(JSON.parse(event.payload!))
+
+          if (!event.payload) return prevEvents
+          // return prevEvents
+          return [...prevEvents, JSON.parse(event.payload).data]
+        })
+      }
+    }
+  }, [updatedEvents])
 
   return (
     <ModalProvider>

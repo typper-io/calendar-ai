@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 export default function App() {
   const [commandKOpen, setCommandKOpen] = useState(false)
   const [chatOpen, setChatOpen] = useState<string>('')
+  const [updatedEvents, setUpdatedEvents] = useState<Array<UpdateEvent>>([])
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -24,7 +25,7 @@ export default function App() {
   return (
     <div className="relative">
       <div className="flex-grow overflow-hidden">
-        <Calendar />
+        <Calendar updatedEvents={updatedEvents} />
       </div>
 
       <CommandK
@@ -38,6 +39,7 @@ export default function App() {
           setCommandKOpen={setCommandKOpen}
           setChatOpen={setChatOpen}
           chatOpen={chatOpen}
+          setUpdatedEvents={setUpdatedEvents}
         />
       </div>
     </div>

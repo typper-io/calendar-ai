@@ -15,10 +15,12 @@ export const FloatingDock = ({
   setCommandKOpen,
   chatOpen,
   setChatOpen,
+  setUpdatedEvents,
 }: {
   setCommandKOpen: Dispatch<SetStateAction<boolean>>
   chatOpen: string
   setChatOpen: Dispatch<SetStateAction<string>>
+  setUpdatedEvents: Dispatch<SetStateAction<Array<UpdateEvent>>>
 }) => {
   const items = [
     {
@@ -69,8 +71,7 @@ export const FloatingDock = ({
               chatOpen={chatOpen}
               closeChat={() => setChatOpen('')}
               updateEventList={(jobs: UpdateEvent[]) => {
-                console.log(jobs)
-                return
+                setUpdatedEvents(jobs)
               }}
             />
           )}
