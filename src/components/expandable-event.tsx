@@ -10,12 +10,14 @@ type ExtendedProps = {
   recurrence: string[]
   hangoutLink: string
   videoConferenceLink: string
-  responseStatus: string
+  responseStatus: 'accepted' | 'declined' | 'tentative' | 'needsAction'
 }
 
 export function ExpandableEvent(props: EventContentArg) {
   const { event, isPast, timeText, isDragging } = props
   const { setActiveEvent } = useModal()
+
+  const { responseStatus } = event.extendedProps as ExtendedProps
 
   const isSmallThen1Hour =
     (event.end?.getTime() || 0) - (event.start?.getTime() || 0) < 3600001
@@ -43,14 +45,32 @@ export function ExpandableEvent(props: EventContentArg) {
           className={cn(
             'w-full h-full overflow-hidden bg-background p-[0.5px] rounded-md cursor-pointer',
             {
-              '!opacity-50': isPast,
               'cursor-grabbing': isDragging,
+              'line-through decoration-primary': responseStatus === 'declined',
             },
           )}
         >
-          <div className="bg-blue-500 w-full h-full rounded-md shadow-md pl-1">
+          <div
+            className={cn(
+              'flex bg-primary/20 w-full h-full rounded-md shadow-md relative',
+              {
+                'opacity-50': responseStatus === 'declined' || isPast,
+              },
+            )}
+          >
             <div
-              className={cn('bg-blue-100/90 w-full h-full', {
+              className={cn('inset-0 absolute', {
+                'bg-stripes':
+                  responseStatus === 'needsAction' ||
+                  responseStatus === 'tentative',
+              })}
+            />
+            <div
+              className={cn('h-full w-1 bg-primary rounded-md flex-shrink-0')}
+            />
+
+            <div
+              className={cn('w-full h-full', {
                 'px-2': isSmallThen1Hour,
                 'flex gap-2 items-center': isSmallThen30Minutes,
                 'p-2': !isSmallThen1Hour,
@@ -58,7 +78,7 @@ export function ExpandableEvent(props: EventContentArg) {
             >
               <motion.p
                 layoutId={`title-${uniqueId}`}
-                className={cn('font-semibold truncate text-blue-500', {
+                className={cn('font-semibold truncate text-primary', {
                   'text-base': !isSmallThen1Hour,
                   'text-sm': isSmallThen1Hour,
                   'text-xs': isSmallThen30Minutes,
@@ -67,7 +87,7 @@ export function ExpandableEvent(props: EventContentArg) {
                 {event.title}
               </motion.p>
               {!isSmallThen30Minutes && (
-                <p className="text-sm truncate text-blue-500">{timeText}</p>
+                <p className="text-sm truncate text-primary">{timeText}</p>
               )}
             </div>
           </div>

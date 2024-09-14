@@ -52,7 +52,9 @@ export async function GET(request: Request) {
           event.conferenceData?.entryPoints?.find(
             (ep) => ep.entryPointType === 'video',
           )?.uri || '',
-        responseStatus: event.status,
+        responseStatus:
+          event.attendees?.find((attendee) => attendee.self)?.responseStatus ||
+          'accepted',
       },
     }))
 

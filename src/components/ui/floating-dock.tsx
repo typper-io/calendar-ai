@@ -2,43 +2,45 @@
 
 import { Chat } from '@/components/chat'
 import { cn } from '@/lib/utils'
-import {
-  AnimatePresence,
-  MotionValue,
-  motion,
-  useMotionValue,
-} from 'framer-motion'
-import { Dispatch, SetStateAction, useState } from 'react'
-import { Calendar, Search, Sparkles } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useState } from 'react'
+import { Calendar, Search, Settings, Sparkles } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import { useCommandK } from '@/hooks/use-command'
+import { useChat } from '@/hooks/use-chat'
 
-export const FloatingDock = ({
-  setCommandKOpen,
-  chatOpen,
-  setChatOpen,
-}: {
-  setCommandKOpen: Dispatch<SetStateAction<boolean>>
-  chatOpen: string
-  setChatOpen: Dispatch<SetStateAction<string>>
-}) => {
+export const FloatingDock = () => {
+  const { chatOpen, setChatOpen } = useChat()
+  const { setCommandKOpen } = useCommandK()
+  const pathname = usePathname()
+
   const items = [
     {
       title: 'Calendar',
       icon: <Calendar size={24} />,
       href: '/app',
     },
-    {
-      title: 'Command',
-      icon: <Search size={24} />,
-      action: () => setCommandKOpen(true),
-    },
-    {
-      title: 'Assistant',
-      icon: <Sparkles size={24} />,
-      action: () => setChatOpen('Hello!'),
-    },
+    ...(pathname === '/app'
+      ? [
+          {
+            title: 'Command',
+            icon: <Search size={24} />,
+            action: () => setCommandKOpen(true),
+          },
+          {
+            title: 'Assistant',
+            icon: <Sparkles size={24} />,
+            action: () => setChatOpen('Hello!'),
+          },
+        ]
+      : []),
+    // TODO implement settings
+    // {
+    //   title: 'Settings',
+    //   icon: <Settings size={24} />,
+    //   href: '/app/settings',
+    // },
   ]
-
-  let mouseX = useMotionValue(Infinity)
 
   return (
     <div className="relative">
@@ -46,11 +48,9 @@ export const FloatingDock = ({
       <motion.div
         animate={{
           height: chatOpen ? '500px' : '64px',
-          width: chatOpen ? '500px' : '250px',
+          width: pathname === '/app' ? (chatOpen ? '500px' : '250px') : '180px',
         }}
         transition={{ type: 'spring', bounce: 0.25, duration: 0.5 }}
-        onMouseMove={(e) => mouseX.set(e.pageX)}
-        onMouseLeave={() => mouseX.set(Infinity)}
         className={cn(
           'relative mx-auto flex gap-4 p-2 items-center justify-center shadow-sm',
           {
@@ -61,9 +61,7 @@ export const FloatingDock = ({
       >
         <AnimatePresence mode="wait">
           {!chatOpen ? (
-            items.map((item) => (
-              <IconContainer mouseX={mouseX} key={item.title} {...item} />
-            ))
+            items.map((item) => <IconContainer key={item.title} {...item} />)
           ) : (
             <Chat chatOpen={chatOpen} closeChat={() => setChatOpen('')} />
           )}
@@ -73,31 +71,32 @@ export const FloatingDock = ({
   )
 }
 
-function IconContainer({
-  mouseX,
-  title,
-  icon,
-  ...rest
-}: {
-  mouseX: MotionValue
+interface IconContainerProps {
   title: string
   icon: React.ReactNode
   href?: string
   action?: () => void
-}) {
+}
+
+function IconContainer({ icon, title, href, action }: IconContainerProps) {
   const [hovered, setHovered] = useState(false)
 
+  const commonProps = {
+    key: 'icons',
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
+    onMouseEnter: () => setHovered(true),
+    onMouseLeave: () => setHovered(false),
+    className:
+      'aspect-square hover:bg-accent flex items-center justify-center relative h-16 w-16 rounded-full cursor-pointer',
+  }
+
+  const Container = href ? motion.a : motion.div
+  const containerProps = href ? { href } : { onClick: action }
+
   return (
-    <motion.div
-      key="icons"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onClick={rest.action}
-      className="aspect-square hover:bg-accent flex items-center justify-center relative h-16 w-16 rounded-full cursor-pointer"
-    >
+    <Container {...commonProps} {...containerProps}>
       <AnimatePresence>
         {hovered && (
           <motion.div
@@ -111,6 +110,6 @@ function IconContainer({
         )}
       </AnimatePresence>
       <div className="flex items-center justify-center">{icon}</div>
-    </motion.div>
+    </Container>
   )
 }

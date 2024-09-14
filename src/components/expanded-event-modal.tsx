@@ -97,12 +97,6 @@ export function ExpandedEventModal() {
                     <p className="text-muted-foreground text-xs">
                       {formatDateRange(activeEvent.start, activeEvent.end)}
                     </p>
-                    {
-                      // TODO make dynamic
-                    }
-                    {/* <p className="text-muted-foreground text-xs">
-                      Semanal to dia 3
-                    </p> */}
                   </div>
                 </div>
               )}
