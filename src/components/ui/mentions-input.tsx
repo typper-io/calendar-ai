@@ -30,16 +30,16 @@ const HighlightComponent: React.FC<HighlightComponentProps> = ({
   type,
 }) => {
   const colorClasses: Record<TextSegment['type'], string> = {
-    email: 'bg-primary',
-    date: 'bg-secondary-brand',
-    mention: 'bg-primary',
+    email: 'bg-primary/5',
+    date: 'bg-secondary-brand/5',
+    mention: 'bg-primary/5',
     normal: '',
   }
 
   return (
     <span
       className={cn(
-        'rounded-md text-primary-foreground p-1 cursor-pointer z-50 w-fit h-fit',
+        'rounded-md py-0.5 px-2 cursor-pointer z-50 w-fit h-fit',
         colorClasses[type],
       )}
     >

@@ -4,7 +4,7 @@ import { Chat } from '@/components/chat'
 import { cn } from '@/lib/utils'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useState } from 'react'
-import { Calendar, Search, Settings, Sparkles } from 'lucide-react'
+import { Calendar, Command, Sparkles } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { useCommandK } from '@/hooks/use-command'
 import { useChat } from '@/hooks/use-chat'
@@ -23,8 +23,8 @@ export const FloatingDock = () => {
     ...(pathname === '/app'
       ? [
           {
-            title: 'Command',
-            icon: <Search size={24} />,
+            title: 'Command (CMD + K)',
+            icon: <Command size={24} />,
             action: () => setCommandKOpen(true),
           },
           {
@@ -44,7 +44,7 @@ export const FloatingDock = () => {
 
   return (
     <div className="relative">
-      <div className="bg-accent/50 absolute inset-0 rounded-full" />
+      <div className="bg-background/80 absolute inset-0 rounded-full" />
       <motion.div
         animate={{
           height: chatOpen ? '500px' : '64px',
@@ -89,7 +89,7 @@ function IconContainer({ icon, title, href, action }: IconContainerProps) {
     onMouseEnter: () => setHovered(true),
     onMouseLeave: () => setHovered(false),
     className:
-      'aspect-square hover:bg-accent flex items-center justify-center relative h-16 w-16 rounded-full cursor-pointer',
+      'aspect-square hover:bg-background flex items-center justify-center relative h-16 w-16 rounded-full cursor-pointer',
   }
 
   const Container = href ? motion.a : motion.div
