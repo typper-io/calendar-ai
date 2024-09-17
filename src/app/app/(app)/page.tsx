@@ -4,13 +4,16 @@ import { useCallback, useRef } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import interactionPlugin from '@fullcalendar/interaction'
-import { DatesSetArg } from '@fullcalendar/core'
+import interactionPlugin, {
+  EventResizeDoneArg,
+} from '@fullcalendar/interaction'
+import { CalendarOptions, DatesSetArg, EventDropArg } from '@fullcalendar/core'
 import CustomHeader from '@/components/custom-header'
 import { ExpandedEventModal } from '@/components/expanded-event-modal'
 import { ExpandableEvent } from '@/components/expandable-event'
 import { ModalProvider } from '@/hooks/use-modal'
 import { useEvents } from '@/hooks/use-events'
+import { toast } from 'sonner'
 
 export interface CalendarEvent {
   id: string
@@ -67,6 +70,29 @@ export default function AppHome() {
     ],
   )
 
+  const handleUpdateEvent = async (
+    event: EventDropArg | EventResizeDoneArg,
+  ) => {
+    const eventData = {
+      id: event.event.id,
+      start: event.event.start,
+      end: event.event.end,
+      summary: event.event.title,
+      attendees: event.event.extendedProps.attendees,
+      description: event.event.extendedProps.description,
+    }
+
+    await fetch('/api/calendar/events', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(eventData),
+    })
+
+    toast('Event updated')
+  }
+
   return (
     <ModalProvider>
       <div className="h-screen overflow-auto p-4 flex flex-col gap-2">
@@ -115,8 +141,9 @@ export default function AppHome() {
           eventContent={function renderEventContent(arg) {
             return <ExpandableEvent {...arg} />
           }}
-          editable={false}
-          droppable={false}
+          editable={true}
+          eventDrop={handleUpdateEvent}
+          eventResize={handleUpdateEvent}
         />
 
         <ExpandedEventModal />

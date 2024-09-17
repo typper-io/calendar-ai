@@ -99,13 +99,6 @@ export async function POST(request: Request) {
         timeZone: 'UTC',
       },
       attendees: eventData.attendees,
-      reminders: {
-        useDefault: false,
-        overrides: [
-          { method: 'email', minutes: 24 * 60 },
-          { method: 'popup', minutes: 10 },
-        ],
-      },
     }
 
     if (eventData.attendees && eventData.attendees.length > 0) {
@@ -160,5 +153,65 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ event: response.data })
   } catch (error: any) {
     return NextResponse.json({ error: 'Failed to delete event' })
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session || !session.accessToken) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+
+    const eventData = await request.json()
+
+    if (!eventData.summary || !eventData.start || !eventData.end) {
+      return NextResponse.json(
+        { error: 'Summary, start, and end are required' },
+        { status: 400 },
+      )
+    }
+
+    const oauth2Client = new google.auth.OAuth2()
+
+    oauth2Client.setCredentials({ access_token: session.accessToken })
+
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client })
+
+    const eventBody: calendar_v3.Schema$Event = {
+      id: eventData.id,
+      summary: eventData.summary,
+      description: eventData.description,
+      start: {
+        dateTime: eventData.start,
+        timeZone: 'UTC',
+      },
+      end: {
+        dateTime: eventData.end,
+        timeZone: 'UTC',
+      },
+      attendees: eventData.attendees,
+    }
+
+    if (eventData.attendees && eventData.attendees.length > 0) {
+      eventBody.conferenceData = {
+        createRequest: {
+          requestId: Math.random().toString(36).substring(2),
+          conferenceSolutionKey: { type: 'hangoutsMeet' },
+        },
+      }
+    }
+
+    const response = await calendar.events.update({
+      calendarId: 'primary',
+      eventId: eventData.id,
+      requestBody: eventBody,
+      conferenceDataVersion: 1,
+    })
+
+    return NextResponse.json({ event: response.data })
+  } catch (error: any) {
+    return NextResponse.json({ error: 'Failed to update event' })
   }
 }
