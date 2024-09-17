@@ -95,7 +95,7 @@ export default function AppHome() {
 
   return (
     <ModalProvider>
-      <div className="h-[calc(100vh-64px)] sm:h-screen overflow-auto px-4 pt-4 sm:p-4 flex flex-col gap-2">
+      <div className="h-[calc(100dvh-64px)] sm:h-screen overflow-auto px-4 pt-4 sm:p-4 flex flex-col gap-2">
         <CustomHeader calendarRef={calendarRef} />
 
         <FullCalendar
