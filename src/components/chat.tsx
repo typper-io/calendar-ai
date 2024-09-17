@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useActions, readStreamableValue } from 'ai/rsc'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -29,9 +29,16 @@ export function Chat({
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
   const [contacts, setContacts] = useState<Array<User>>([])
   const [selectedUserIndex, setSelectedUserIndex] = useState(0)
+  const chatContainerRef = useRef<HTMLDivElement>(null)
 
   const { refetchEvents } = useEvents()
   const { submitMessage } = useActions()
+
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+    }
+  }
 
   useEffect(() => {
     const fetchContacts = async () => {
@@ -45,6 +52,8 @@ export function Chat({
       setContacts(
         data.contacts.map((email: string) => ({ id: email, display: email })),
       )
+
+      scrollToBottom()
     }
 
     fetchContacts()
@@ -71,7 +80,6 @@ export function Chat({
           setThreadId(delta!)
         }
       })()
-
       ;(async () => {
         for await (const _ of readStreamableValue<string>(
           response.refetchJobsStream,
@@ -162,6 +170,10 @@ export function Chat({
     return () => document.removeEventListener('keydown', down)
   }, [closeChat])
 
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -205,7 +217,10 @@ export function Chat({
         )}
       </div>
 
-      <div className="flex flex-col overflow-y-auto h-[calc(100dvh-100px)]">
+      <div
+        ref={chatContainerRef}
+        className="flex flex-col overflow-y-auto h-[calc(100dvh-100px)]"
+      >
         {messages.map((message, index) => (
           <div
             key={message.id + index}
