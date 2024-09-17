@@ -191,7 +191,10 @@ export async function PUT(request: Request) {
         dateTime: eventData.end,
         timeZone: 'UTC',
       },
-      attendees: eventData.attendees,
+      attendees: eventData.attendees.map((attendee: string) => ({
+        email: attendee,
+      })),
+      status: 'confirmed',
     }
 
     if (eventData.attendees && eventData.attendees.length > 0) {
