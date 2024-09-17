@@ -7,7 +7,7 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin, {
   EventResizeDoneArg,
 } from '@fullcalendar/interaction'
-import { CalendarOptions, DatesSetArg, EventDropArg } from '@fullcalendar/core'
+import { DatesSetArg, EventDropArg } from '@fullcalendar/core'
 import CustomHeader from '@/components/custom-header'
 import { ExpandedEventModal } from '@/components/expanded-event-modal'
 import { ExpandableEvent } from '@/components/expandable-event'
@@ -95,7 +95,7 @@ export default function AppHome() {
 
   return (
     <ModalProvider>
-      <div className="h-screen overflow-auto p-4 flex flex-col gap-2">
+      <div className="h-[calc(100vh-64px)] sm:h-screen overflow-auto px-4 pt-4 sm:p-4 flex flex-col gap-2">
         <CustomHeader calendarRef={calendarRef} />
 
         <FullCalendar

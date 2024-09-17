@@ -2,7 +2,7 @@ import { FC, RefObject, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import FullCalendar from '@fullcalendar/react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { Tabs } from '@/components/ui/tabs'
+import { Tab, Tabs } from '@/components/ui/tabs'
 import { useCallback } from 'react'
 import {
   Tooltip,
@@ -10,6 +10,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { useDevice } from '@/hooks/use-device'
 
 interface CustomHeaderProps {
   calendarRef: RefObject<FullCalendar>
@@ -17,6 +18,8 @@ interface CustomHeaderProps {
 
 const CustomHeader: FC<CustomHeaderProps> = ({ calendarRef }) => {
   const [showToday, setShowToday] = useState(false)
+  const [active, setActive] = useState<Tab>('Week')
+  const { isMobile } = useDevice()
 
   useEffect(() => {
     const updateShowToday = () => {
@@ -92,6 +95,13 @@ const CustomHeader: FC<CustomHeaderProps> = ({ calendarRef }) => {
     return () => document.removeEventListener('keydown', down)
   }, [goNext, goPrev])
 
+  useEffect(() => {
+    if (isMobile) {
+      calendarRef.current?.getApi().changeView('timeGridDay')
+      setActive('Day')
+    }
+  }, [calendarRef, isMobile])
+
   return (
     <div className="flex justify-between items-center">
       <h2 className="text-muted-foreground">
@@ -160,8 +170,9 @@ const CustomHeader: FC<CustomHeaderProps> = ({ calendarRef }) => {
 
         <Tabs
           tabs={['Month', 'Week', 'Day']}
-          defaultTab="Week"
           onTabChange={changeTab}
+          active={active}
+          setActive={setActive}
         />
       </div>
     </div>

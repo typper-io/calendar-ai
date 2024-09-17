@@ -1,32 +1,31 @@
 'use client'
 
-import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
-type Tab = string
+export type Tab = string
 
 export const Tabs = ({
   tabs: propTabs,
   containerClassName,
   tabClassName,
-  defaultTab,
   onTabChange,
+  active,
+  setActive,
 }: {
   tabs: Tab[]
   containerClassName?: string
   tabClassName?: string
   contentClassName?: string
-  defaultTab?: string
   onTabChange?: (tab: Tab) => void
+  active: Tab
+  setActive: (tab: Tab) => void
 }) => {
-  const [active, setActive] = useState<Tab>(defaultTab || propTabs[0])
-
   return (
     <>
       <div
         className={cn(
-          'flex flex-row items-center justify-start [perspective:1000px] relative overflow-auto sm:overflow-visible no-visible-scrollbar max-w-full bg-muted w-fit rounded-full p-1',
+          'hidden flex-row items-center justify-start [perspective:1000px] relative overflow-auto sm:overflow-visible no-visible-scrollbar max-w-full bg-muted w-fit rounded-full p-1 sm:flex',
           containerClassName,
         )}
       >

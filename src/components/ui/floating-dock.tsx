@@ -3,16 +3,18 @@
 import { Chat } from '@/components/chat'
 import { cn } from '@/lib/utils'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Calendar, Command, Sparkles } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { useCommandK } from '@/hooks/use-command'
 import { useChat } from '@/hooks/use-chat'
+import { useDevice } from '@/hooks/use-device'
 
 export const FloatingDock = () => {
   const { chatOpen, setChatOpen } = useChat()
   const { setCommandKOpen } = useCommandK()
   const pathname = usePathname()
+  const { isMobile } = useDevice()
 
   const items = [
     {
@@ -22,11 +24,15 @@ export const FloatingDock = () => {
     },
     ...(pathname === '/app'
       ? [
-          {
-            title: 'Command (CMD + K)',
-            icon: <Command size={24} />,
-            action: () => setCommandKOpen(true),
-          },
+          ...(!isMobile
+            ? [
+                {
+                  title: 'Command (CMD + K)',
+                  icon: <Command size={24} />,
+                  action: () => setCommandKOpen(true),
+                },
+              ]
+            : []),
           {
             title: 'Assistant (CMD + Q)',
             icon: <Sparkles size={24} />,
@@ -34,25 +40,35 @@ export const FloatingDock = () => {
           },
         ]
       : []),
-    // TODO implement settings
-    // {
-    //   title: 'Settings',
-    //   icon: <Settings size={24} />,
-    //   href: '/app/settings',
-    // },
   ]
 
+  const width = useMemo(() => {
+    if (chatOpen) {
+      return isMobile ? '100%' : '500px'
+    }
+
+    return isMobile ? '180px' : '250px'
+  }, [chatOpen, isMobile])
+
+  const height = useMemo(() => {
+    if (chatOpen) {
+      return isMobile ? '100dvh' : '500px'
+    }
+
+    return '64px'
+  }, [chatOpen, isMobile])
+
   return (
-    <div className="relative">
-      <div className="bg-background/80 absolute inset-0 rounded-full" />
+    <div className="relative sm:w-fit w-full">
+      <div className="bg-background sm:bg-background/80 absolute inset-0 sm:rounded-full" />
       <motion.div
         animate={{
-          height: chatOpen ? '500px' : '64px',
-          width: pathname === '/app' ? (chatOpen ? '500px' : '250px') : '180px',
+          height,
+          width,
         }}
         transition={{ type: 'spring', bounce: 0.25, duration: 0.5 }}
         className={cn(
-          'relative mx-auto flex gap-4 p-2 items-center justify-center shadow-sm',
+          'relative mx-auto flex gap-4 p-2 items-center justify-center sm:shadow-sm',
           {
             'backdrop-blur-3xl rounded-full': !chatOpen,
             'backdrop-blur-3xl rounded-3xl': chatOpen,
