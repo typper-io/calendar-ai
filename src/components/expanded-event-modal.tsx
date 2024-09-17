@@ -115,7 +115,11 @@ export function ExpandedEventModal() {
                 <Video size={24} />
 
                 <Button asChild size="sm" variant="secondary">
-                  <Link href={activeEvent.videoConferenceLink}>
+                  <Link
+                    href={activeEvent.videoConferenceLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     Join with{' '}
                     {getVideoPlatform(activeEvent.videoConferenceLink)}
                   </Link>
