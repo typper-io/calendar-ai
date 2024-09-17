@@ -32,13 +32,7 @@ export default async function RootLayout({
       />
 
       <body className={fontSora.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          forcedTheme="light"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           <Toaster />
 
           <Provider session={session}>
