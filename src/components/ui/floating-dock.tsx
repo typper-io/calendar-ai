@@ -34,7 +34,7 @@ export const FloatingDock = () => {
               ]
             : []),
           {
-            title: 'Assistant (CMD + Q)',
+            title: 'Assistant (Q)',
             icon: <Sparkles size={24} />,
             action: () => setChatOpen('Hello!'),
           },
