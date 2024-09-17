@@ -1,4 +1,5 @@
 import { FC, RefObject, useEffect, useState } from 'react'
+import { Moon, Sun } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import FullCalendar from '@fullcalendar/react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -11,6 +12,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useDevice } from '@/hooks/use-device'
+import { useTheme } from 'next-themes'
 
 interface CustomHeaderProps {
   calendarRef: RefObject<FullCalendar>
@@ -20,6 +22,7 @@ const CustomHeader: FC<CustomHeaderProps> = ({ calendarRef }) => {
   const [showToday, setShowToday] = useState(false)
   const [active, setActive] = useState<Tab>('Week')
   const { isMobile } = useDevice()
+  const { setTheme, theme } = useTheme()
 
   useEffect(() => {
     const updateShowToday = () => {
@@ -104,9 +107,19 @@ const CustomHeader: FC<CustomHeaderProps> = ({ calendarRef }) => {
 
   return (
     <div className="flex justify-between items-center">
-      <h2 className="text-muted-foreground">
-        Calendar {'>'} {formatTitle()}
-      </h2>
+      <div className="flex items-center justify-center">
+        <h2 className="text-muted-foreground">
+          Calendar {'>'} {formatTitle()}
+        </h2>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+        >
+          {theme === 'light' ? <Moon /> : <Sun />}
+        </Button>
+      </div>
 
       <div className="flex gap-2 items-center">
         {showToday && (

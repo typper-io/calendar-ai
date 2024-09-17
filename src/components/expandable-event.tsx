@@ -73,7 +73,7 @@ export function ExpandableEvent(props: EventContentArg) {
             })
           }
           className={cn(
-            'w-full h-full overflow-hidden bg-background p-[0.5px] rounded-md cursor-pointer',
+            'w-full h-full overflow-hidden bg-background dark:bg-background/90 p-[0.5px] rounded-md cursor-pointer',
             {
               'cursor-grabbing': isDragging,
               'line-through decoration-primary': responseStatus === 'declined',
@@ -82,7 +82,7 @@ export function ExpandableEvent(props: EventContentArg) {
         >
           <div
             className={cn(
-              'flex bg-primary/20 w-full h-full rounded-md shadow-md relative',
+              'flex bg-primary/20 dark:bg-primary/5 w-full h-full rounded-md shadow-md relative',
               {
                 'opacity-50': responseStatus === 'declined' || isPast,
               },
@@ -108,16 +108,21 @@ export function ExpandableEvent(props: EventContentArg) {
             >
               <motion.p
                 layoutId={`title-${uniqueId}`}
-                className={cn('font-semibold truncate text-primary', {
-                  'text-base': !isSmallThen1Hour,
-                  'text-sm': isSmallThen1Hour,
-                  'text-xs': isSmallThen30Minutes,
-                })}
+                className={cn(
+                  'font-normal truncate text-primary dark:text-foreground',
+                  {
+                    'text-base': !isSmallThen1Hour,
+                    'text-sm': isSmallThen1Hour,
+                    'text-xs': isSmallThen30Minutes,
+                  },
+                )}
               >
                 {event.title}
               </motion.p>
               {!isSmallThen30Minutes && (
-                <p className="text-sm truncate text-primary">{timeText}</p>
+                <p className="text-sm truncate text-primary dark:text-foreground/80">
+                  {timeText}
+                </p>
               )}
             </div>
           </div>
