@@ -57,6 +57,9 @@ export function ExpandableEvent(props: EventContentArg) {
       <ContextMenuTrigger>
         <motion.div
           layoutId={`card-${uniqueId}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
           onClick={() =>
             setActiveEvent({
               title: event.title,

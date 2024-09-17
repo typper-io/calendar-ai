@@ -13,6 +13,7 @@ import { motion } from 'framer-motion'
 import { toast } from 'sonner'
 import { User } from '@/components/ui/mentions-input'
 import { cn } from '@/lib/utils'
+import { useEvents } from '@/hooks/use-events'
 
 export function Chat({
   closeChat,
@@ -29,6 +30,7 @@ export function Chat({
   const [contacts, setContacts] = useState<Array<User>>([])
   const [selectedUserIndex, setSelectedUserIndex] = useState(0)
 
+  const { refetchEvents } = useEvents()
   const { submitMessage } = useActions()
 
   useEffect(() => {
@@ -67,6 +69,14 @@ export function Chat({
           response.threadIdStream,
         )) {
           setThreadId(delta!)
+        }
+      })()
+
+      ;(async () => {
+        for await (const _ of readStreamableValue<string>(
+          response.refetchJobsStream,
+        )) {
+          refetchEvents()
         }
       })()
 

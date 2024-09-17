@@ -26,6 +26,7 @@ export interface ClientMessage {
   text: ReactNode
   gui: ReactNode
   threadIdStream?: StreamableValue<string, any>
+  refetchJobsStream?: StreamableValue<number, any>
 }
 
 const ASSISTANT_ID = process.env.ASSISTANT_ID
@@ -66,7 +67,9 @@ export async function submitMessage(
     )
     const gui = createStreamableUI()
     const threadIdStream = createStreamableValue(threadId)
+    const refetchJobsStream = createStreamableValue(0)
 
+    let refetchJobs = 0
     const runQueue = []
 
     ;(async () => {
@@ -243,6 +246,9 @@ export async function submitMessage(
                             },
                           })
 
+                          refetchJobs++
+                          refetchJobsStream.update(refetchJobs)
+
                           tool_outputs.push({
                             tool_call_id: toolCallId,
                             output: JSON.stringify(result.data),
@@ -287,6 +293,9 @@ export async function submitMessage(
                             },
                           })
 
+                          refetchJobs++
+                          refetchJobsStream.update(refetchJobs)
+
                           tool_outputs.push({
                             tool_call_id: toolCallId,
                             output: JSON.stringify(result.data),
@@ -300,6 +309,9 @@ export async function submitMessage(
                             calendarId: 'primary',
                             eventId: event_id,
                           })
+
+                          refetchJobs++
+                          refetchJobsStream.update(refetchJobs)
 
                           tool_outputs.push({
                             tool_call_id: toolCallId,
@@ -355,6 +367,7 @@ export async function submitMessage(
         gui.done()
         textStream.done()
         threadIdStream.done()
+        refetchJobsStream.done()
       }
     })()
 
@@ -364,6 +377,7 @@ export async function submitMessage(
       text: textUIStream.value,
       gui: gui.value,
       threadIdStream: threadIdStream.value,
+      refetchJobsStream: refetchJobsStream.value,
     }
   } catch (error: any) {
     return {
