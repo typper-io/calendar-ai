@@ -15,7 +15,7 @@ export interface TextSegment {
   value: string
 }
 
-interface User {
+export interface User {
   id: string
   display: string
 }
@@ -56,7 +56,7 @@ interface CustomMentionsInputProps {
   setSegments: Dispatch<SetStateAction<TextSegment[]>>
 }
 
-const CustomMentionsInput: React.FC<CustomMentionsInputProps> = ({
+export const MentionsInput: React.FC<CustomMentionsInputProps> = ({
   placeholder = 'Type your message...',
   users,
   onChange,
@@ -306,5 +306,3 @@ const CustomMentionsInput: React.FC<CustomMentionsInputProps> = ({
     </div>
   )
 }
-
-export default CustomMentionsInput

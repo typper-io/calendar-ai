@@ -13,13 +13,15 @@ import { toast } from 'sonner'
 import { useEffect, useState } from 'react'
 import { useChat } from '@/hooks/use-chat'
 import { useCommandK } from '@/hooks/use-command'
-import CustomMentionsInput, {
+import {
   TextSegment,
+  MentionsInput,
+  User,
 } from '@/components/ui/mentions-input'
 import { useEvents } from '@/hooks/use-events'
 
 export function CommandK() {
-  const { setChatOpen } = useChat()
+  const { setChatOpen, chatOpen } = useChat()
   const { commandKOpen, setCommandKOpen } = useCommandK()
   const [segments, setSegments] = useState<TextSegment[]>([])
   const { refetchEvents } = useEvents()
@@ -30,20 +32,23 @@ export function CommandK() {
         e.preventDefault()
         setCommandKOpen(!commandKOpen)
       }
+
+      if (!chatOpen) {
+        if (e.key === 'q') {
+          if (!chatOpen) {
+            setChatOpen('Hello!')
+          }
+        }
+      }
     }
 
     document.addEventListener('keydown', down)
     return () => document.removeEventListener('keydown', down)
-  }, [commandKOpen, setCommandKOpen])
+  }, [chatOpen, commandKOpen, setChatOpen, setCommandKOpen])
 
   const [inputValue, setInputValue] = useState('')
   const [loading, setLoading] = useState(false)
-  const [contacts, setContacts] = useState<
-    {
-      id: string
-      display: string
-    }[]
-  >([])
+  const [contacts, setContacts] = useState<Array<User>>([])
 
   const items = [
     {
@@ -147,7 +152,7 @@ export function CommandK() {
   return (
     <CommandDialog open={commandKOpen} onOpenChange={setCommandKOpen}>
       <div className="flex items-center border-b p-3">
-        <CustomMentionsInput
+        <MentionsInput
           users={contacts}
           onChange={handleInputChange}
           segments={segments}

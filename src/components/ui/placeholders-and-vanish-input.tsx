@@ -10,11 +10,15 @@ export function PlaceholdersAndVanishInput({
   onSubmit,
   value,
   setValue,
+  onKeyDown,
+  showDropdown,
 }: {
   placeholders: string[]
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
   value: string
+  showDropdown: boolean
   setValue: React.Dispatch<React.SetStateAction<string>>
 }) {
   const [currentPlaceholder, setCurrentPlaceholder] = useState(0)
@@ -155,9 +159,10 @@ export function PlaceholdersAndVanishInput({
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !animating) {
+    if (e.key === 'Enter' && !animating && !showDropdown) {
       vanishAndSubmit()
     }
+    onKeyDown && onKeyDown(e)
   }
 
   const vanishAndSubmit = () => {
