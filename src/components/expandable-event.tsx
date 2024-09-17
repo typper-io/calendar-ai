@@ -1,8 +1,15 @@
 import { EventContentArg } from '@fullcalendar/core/index.js'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu'
 import { useModal } from '@/hooks/use-modal'
+import { toast } from 'sonner'
+import { useEvents } from '@/hooks/use-events'
 
 type ExtendedProps = {
   description: string
@@ -16,6 +23,7 @@ type ExtendedProps = {
 export function ExpandableEvent(props: EventContentArg) {
   const { event, isPast, timeText, isDragging } = props
   const { setActiveEvent } = useModal()
+  const { refetchEvents } = useEvents()
 
   const { responseStatus } = event.extendedProps as ExtendedProps
 
@@ -25,6 +33,24 @@ export function ExpandableEvent(props: EventContentArg) {
     (event.end?.getTime() || 0) - (event.start?.getTime() || 0) < 1800001
 
   const uniqueId = `${event.id || event.title}-${event.start?.toISOString()}`
+
+  const handleDeleteEvent = async () => {
+    const eventData = {
+      id: event.id,
+    }
+
+    await fetch('/api/calendar/events', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(eventData),
+    })
+
+    await refetchEvents()
+
+    toast('Event has been deleted.')
+  }
 
   return (
     <ContextMenu>
@@ -93,6 +119,12 @@ export function ExpandableEvent(props: EventContentArg) {
           </div>
         </motion.div>
       </ContextMenuTrigger>
+
+      <ContextMenuContent>
+        <ContextMenuItem onClick={handleDeleteEvent}>
+          Delete event
+        </ContextMenuItem>
+      </ContextMenuContent>
     </ContextMenu>
   )
 }

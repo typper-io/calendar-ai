@@ -128,3 +128,37 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Failed to create event' })
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session || !session.accessToken) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+    }
+
+    const eventData = await request.json()
+
+    if (!eventData.id) {
+      return NextResponse.json(
+        { error: 'Event ID is required' },
+        { status: 400 },
+      )
+    }
+
+    const oauth2Client = new google.auth.OAuth2()
+
+    oauth2Client.setCredentials({ access_token: session.accessToken })
+
+    const calendar = google.calendar({ version: 'v3', auth: oauth2Client })
+
+    const response = await calendar.events.delete({
+      calendarId: 'primary',
+      eventId: eventData.id,
+    })
+
+    return NextResponse.json({ event: response.data })
+  } catch (error: any) {
+    return NextResponse.json({ error: 'Failed to delete event' })
+  }
+}

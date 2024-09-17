@@ -3,6 +3,13 @@ import { Button } from '@/components/ui/button'
 import FullCalendar from '@fullcalendar/react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { Tabs } from '@/components/ui/tabs'
+import { useCallback } from 'react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 interface CustomHeaderProps {
   calendarRef: RefObject<FullCalendar>
@@ -32,15 +39,15 @@ const CustomHeader: FC<CustomHeaderProps> = ({ calendarRef }) => {
     }
   }, [calendarRef])
 
-  function goNext() {
+  const goNext = useCallback(() => {
     const calendarApi = calendarRef.current?.getApi()
     calendarApi?.next()
-  }
+  }, [calendarRef])
 
-  function goPrev() {
+  const goPrev = useCallback(() => {
     const calendarApi = calendarRef.current?.getApi()
     calendarApi?.prev()
-  }
+  }, [calendarRef])
 
   function goToday() {
     const calendarApi = calendarRef.current?.getApi()
@@ -70,6 +77,21 @@ const CustomHeader: FC<CustomHeaderProps> = ({ calendarRef }) => {
     calendarRef.current?.getApi().changeView(view)
   }
 
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        goPrev()
+      }
+
+      if (e.key === 'ArrowRight') {
+        goNext()
+      }
+    }
+
+    document.addEventListener('keydown', down)
+    return () => document.removeEventListener('keydown', down)
+  }, [goNext, goPrev])
+
   return (
     <div className="flex justify-between items-center">
       <h2 className="text-muted-foreground">
@@ -78,24 +100,62 @@ const CustomHeader: FC<CustomHeaderProps> = ({ calendarRef }) => {
 
       <div className="flex gap-2 items-center">
         {showToday && (
-          <Button
-            onClick={goToday}
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground"
-          >
-            Today
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <Button
+                asChild
+                onClick={goToday}
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground"
+              >
+                <TooltipTrigger>Today</TooltipTrigger>
+              </Button>
+
+              <TooltipContent className="flex gap-1 items-center justify-center">
+                Go to today
+                <div className="p-1 bg-accent w-fit h-fit shrink-0 rounded-md aspect-square">
+                  T
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         )}
 
         <div className="flex gap-1 items-center">
-          <Button onClick={goPrev} variant="ghost" size="sm">
-            <ChevronLeft />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <Button asChild onClick={goPrev} variant="ghost" size="sm">
+                <TooltipTrigger>
+                  <ChevronLeft />
+                </TooltipTrigger>
+              </Button>
 
-          <Button onClick={goNext} variant="ghost" size="sm">
-            <ChevronRight />
-          </Button>
+              <TooltipContent className="flex gap-1 items-center justify-center">
+                Previous
+                <div className="p-1 bg-accent w-fit h-fit shrink-0 rounded-md aspect-square">
+                  <ChevronLeft size={14} />
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <Button asChild onClick={goNext} variant="ghost" size="sm">
+                <TooltipTrigger>
+                  <ChevronRight />
+                </TooltipTrigger>
+              </Button>
+
+              <TooltipContent className="flex gap-1 items-center justify-center">
+                Next
+                <div className="p-1 bg-accent w-fit h-fit shrink-0 rounded-md aspect-square">
+                  <ChevronRight size={14} />
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
 
         <Tabs
