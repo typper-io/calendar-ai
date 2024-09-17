@@ -23,6 +23,14 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
+      {
+        // TODO solve this for accessibility
+      }
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+      />
+
       <body className={fontSora.className}>
         <ThemeProvider
           attribute="class"
