@@ -74,7 +74,7 @@ export async function POST(request: Request) {
 
     const eventData = await request.json()
 
-    if (!eventData.summary || !eventData.start || !eventData.end) {
+    if (!eventData.start || !eventData.end) {
       return NextResponse.json(
         { error: 'Summary, start, and end are required' },
         { status: 400 },
@@ -87,8 +87,17 @@ export async function POST(request: Request) {
 
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client })
 
+    const attendees = eventData.attendees?.length
+      ? [
+          ...eventData.attendees,
+          {
+            email: session.user?.email,
+          },
+        ]
+      : []
+
     const eventBody: calendar_v3.Schema$Event = {
-      summary: eventData.summary,
+      summary: eventData.summary || 'Appointment',
       description: eventData.description,
       start: {
         dateTime: eventData.start,
@@ -98,7 +107,7 @@ export async function POST(request: Request) {
         dateTime: eventData.end,
         timeZone: 'UTC',
       },
-      attendees: eventData.attendees,
+      attendees,
     }
 
     if (eventData.attendees && eventData.attendees.length > 0) {
@@ -179,6 +188,17 @@ export async function PUT(request: Request) {
 
     const calendar = google.calendar({ version: 'v3', auth: oauth2Client })
 
+    const attendees = eventData.attendees?.length
+      ? [
+          ...eventData.attendees.map((attendee: string) => ({
+            email: attendee,
+          })),
+          {
+            email: session.user?.email,
+          },
+        ]
+      : []
+
     const eventBody: calendar_v3.Schema$Event = {
       id: eventData.id,
       summary: eventData.summary,
@@ -191,9 +211,7 @@ export async function PUT(request: Request) {
         dateTime: eventData.end,
         timeZone: 'UTC',
       },
-      attendees: eventData.attendees.map((attendee: string) => ({
-        email: attendee,
-      })),
+      attendees,
       status: 'confirmed',
     }
 

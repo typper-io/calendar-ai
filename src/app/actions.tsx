@@ -215,6 +215,10 @@ export async function submitMessage(
                           const start = new Date(start_time).toISOString()
                           const end = new Date(end_time).toISOString()
 
+                          const attendeesWithSelf = attendees?.length
+                            ? [...attendees, session.user?.email]
+                            : []
+
                           const result = await calendar.events.insert({
                             calendarId: 'primary',
                             requestBody: {
@@ -230,9 +234,11 @@ export async function submitMessage(
                                 date: all_day ? end.split('T')[0] : undefined,
                                 timeZone: eventTimeZone,
                               },
-                              attendees: attendees?.map((email: string) => ({
-                                email,
-                              })),
+                              attendees: attendeesWithSelf?.map(
+                                (email: string) => ({
+                                  email,
+                                }),
+                              ),
                               recurrence,
                             },
                           })
