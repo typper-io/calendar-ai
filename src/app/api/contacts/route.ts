@@ -30,7 +30,9 @@ export async function GET() {
     })
 
     const allEventsAttendees = response.data.items?.map((event) => {
-      return event.attendees?.map((attendee) => attendee.email)
+      return event.attendees
+        ?.filter((attendee) => !attendee.self)
+        ?.map((attendee) => attendee.email)
     })
 
     const allAttendees = allEventsAttendees?.flat().filter((email) => email)
