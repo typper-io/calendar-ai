@@ -89,6 +89,7 @@ export const FloatingDock = () => {
 
   return (
     <motion.div
+      className="z-10 w-fit absolute"
       variants={variants}
       animate={animate}
       transition={{ duration: 0.5 }}
