@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useMemo, useState } from 'react'
 import { Command, Settings, Sparkles } from 'lucide-react'
-import { usePathname } from 'next/navigation'
 import { useCommandK } from '@/hooks/use-command'
 import { useChat } from '@/hooks/use-chat'
 import { useDevice } from '@/hooks/use-device'
@@ -14,34 +13,29 @@ import { Badge } from '@/components/ui/badge'
 export const FloatingDock = () => {
   const { chatOpen, setChatOpen } = useChat()
   const { setCommandKOpen } = useCommandK()
-  const pathname = usePathname()
   const { isMobile } = useDevice()
 
   const items = [
-    ...(pathname === '/app'
+    {
+      title: 'Assistant (Q)',
+      icon: <Sparkles size={24} />,
+      action: () => setChatOpen('Hello!'),
+    },
+    ...(!isMobile
       ? [
-          ...(!isMobile
-            ? [
-                {
-                  title: 'Command (CMD + K)',
-                  icon: <Command size={24} />,
-                  action: () => setCommandKOpen(true),
-                },
-              ]
-            : []),
           {
-            title: 'Assistant (Q)',
-            icon: <Sparkles size={24} />,
-            action: () => setChatOpen('Hello!'),
+            title: 'Command (CMD + K)',
+            icon: <Command size={24} />,
+            action: () => setCommandKOpen(true),
+          },
+          {
+            title: 'Settings',
+            icon: <Settings size={24} />,
+            href: '/settings',
+            soon: true,
           },
         ]
       : []),
-    {
-      title: 'Settings',
-      icon: <Settings size={24} />,
-      href: '/settings',
-      soon: true,
-    },
   ]
 
   const width = useMemo(() => {
@@ -49,7 +43,7 @@ export const FloatingDock = () => {
       return isMobile ? '100vw' : '500px'
     }
 
-    return isMobile ? '180px' : '250px'
+    return isMobile ? '64px' : '250px'
   }, [chatOpen, isMobile])
 
   const height = useMemo(() => {
@@ -60,11 +54,44 @@ export const FloatingDock = () => {
     return '64px'
   }, [chatOpen, isMobile])
 
+  const variants = {
+    mobileChatOpen: {
+      bottom: 0,
+      right: 'auto',
+      left: 'auto',
+      x: 0,
+    },
+    mobileChatClosed: {
+      bottom: '2.5rem',
+      right: '2.5rem',
+      left: 'auto',
+      x: 0,
+    },
+    desktop: {
+      bottom: '2.5rem',
+      left: '50%',
+      x: '-50%',
+      right: 'auto',
+    },
+  }
+
+  const animate = useMemo(() => {
+    if (isMobile) {
+      if (chatOpen) {
+        return 'mobileChatOpen'
+      }
+
+      return 'mobileChatClosed'
+    }
+
+    return 'desktop'
+  }, [chatOpen, isMobile])
+
   return (
-    <div
-      className={cn('z-10 w-fit absolute bottom-10 left-1/2 -translate-x-1/2', {
-        'bottom-0': chatOpen && isMobile,
-      })}
+    <motion.div
+      variants={variants}
+      animate={animate}
+      transition={{ duration: 0.5 }}
     >
       <div className="relative w-fit">
         <div
@@ -95,7 +122,7 @@ export const FloatingDock = () => {
           </AnimatePresence>
         </motion.div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
