@@ -3,7 +3,7 @@ import { ReactNode } from 'react'
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="relative w-full flex flex-col overflow-hidden">
+    <div className="relative h-dvh w-full flex flex-col overflow-hidden">
       {children}
 
       <FloatingDock />
