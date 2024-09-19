@@ -54,45 +54,13 @@ export const FloatingDock = () => {
     return '64px'
   }, [chatOpen, isMobile])
 
-  const variants = {
-    mobileChatOpen: {
-      bottom: 0,
-      right: 'auto',
-      left: 'auto',
-      x: 0,
-    },
-    mobileChatClosed: {
-      bottom: '2.5rem',
-      right: '2.5rem',
-      left: 'auto',
-      x: 0,
-    },
-    desktop: {
-      bottom: '2.5rem',
-      left: '50%',
-      x: '-50%',
-      right: 'auto',
-    },
-  }
-
-  const animate = useMemo(() => {
-    if (isMobile) {
-      if (chatOpen) {
-        return 'mobileChatOpen'
-      }
-
-      return 'mobileChatClosed'
-    }
-
-    return 'desktop'
-  }, [chatOpen, isMobile])
-
   return (
-    <motion.div
-      className="z-10 w-fit absolute"
-      variants={variants}
-      animate={animate}
-      transition={{ duration: 0.5 }}
+    <div
+      className={cn('z-10 w-fit absolute bottom-10', {
+        'bottom-0': chatOpen && isMobile,
+        'right-10': isMobile && !chatOpen,
+        'left-1/2 -translate-x-1/2': !isMobile,
+      })}
     >
       <div className="relative w-fit">
         <div
@@ -123,7 +91,7 @@ export const FloatingDock = () => {
           </AnimatePresence>
         </motion.div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
