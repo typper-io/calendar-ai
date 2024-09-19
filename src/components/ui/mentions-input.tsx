@@ -30,9 +30,9 @@ const HighlightComponent: React.FC<HighlightComponentProps> = ({
   type,
 }) => {
   const colorClasses: Record<TextSegment['type'], string> = {
-    email: 'bg-primary/5',
-    date: 'bg-secondary-brand/5',
-    mention: 'bg-primary/5',
+    email: 'bg-primary/10',
+    date: 'bg-secondary-brand/10',
+    mention: 'bg-primary/10',
     normal: '',
   }
 

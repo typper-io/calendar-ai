@@ -50,7 +50,10 @@ export function Chat({
 
       const data = await response.json()
       setContacts(
-        data.contacts.map((email: string) => ({ id: email, display: email })),
+        data.contacts?.map((email: string) => ({
+          id: email,
+          display: email,
+        })) || [],
       )
 
       scrollToBottom()

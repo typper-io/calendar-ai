@@ -106,11 +106,9 @@ const CustomHeader: FC<CustomHeaderProps> = ({ calendarRef }) => {
   }, [calendarRef, isMobile])
 
   return (
-    <div className="flex justify-between items-center">
-      <div className="flex items-center justify-center">
-        <h2 className="text-muted-foreground">
-          Calendar {'>'} {formatTitle()}
-        </h2>
+    <div className="flex px-4 sm:p-0 justify-between items-center">
+      <div className="flex items-center justify-center gap-2">
+        <h2 className="text-muted-foreground">{formatTitle()}</h2>
 
         <Button
           variant="ghost"
