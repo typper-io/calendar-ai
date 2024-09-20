@@ -75,7 +75,7 @@ export const FloatingDock = () => {
           }}
           transition={{ type: 'spring', bounce: 0.25, duration: 0.5 }}
           className={cn(
-            'relative mx-auto flex gap-4 p-2 items-center justify-center shadow-sm backdrop-blur-3xl',
+            'relative mx-auto flex gap-4 p-2 items-center justify-center shadow-sm backdrop-blur-3xl dark:bg-foreground/5',
             {
               'rounded-full': !chatOpen,
               'rounded-3xl': chatOpen && !isMobile,

@@ -32,15 +32,11 @@ export default async function RootLayout({
       />
 
       <body className={fontSora.className}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <Toaster />
-
-          <Provider session={session}>
-            <TooltipProvider>
-              <AI>{children}</AI>
-            </TooltipProvider>
-          </Provider>
-        </ThemeProvider>
+        <Provider session={session}>
+          <TooltipProvider>
+            <AI>{children}</AI>
+          </TooltipProvider>
+        </Provider>
       </body>
     </html>
   )
